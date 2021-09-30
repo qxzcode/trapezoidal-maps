@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="simple/simple.min.css">
+    <title>Trapezoidal Maps</title>
+</head>
+<body>
+    <header>
+        <h1>Where Am I?<br><small>An Explanation of Trapezoidal Maps</small></h1>
+    </header>
+
+    <main>
+        <p>Theo Lincoln and Quinn Tucker</p>
+
+        <h2>Overview</h2>
+        <p>
+            Determining which planar region a point belongs to has many applications, such as localizing points to zip codes, detecting collisions in sensory regions for spatial data structures, or UI interaction. However, solving this problem with unprocessed polygonal data would be polynomial in time. Trapezoidal maps provide a data structure that allows the problem to be solved in <i>O</i>(log(<i>n</i>)) time, and our project aims to implement the algorithm as well as create a pedagogical aid to demonstrate it in action. In our tool, users will either choose from a predetermined set of maps, or draw in their own polygonal regions. There will be buttons to move through the steps of the algorithm, as well as a button to play the animation to completion.
+        </p>
+
+        <h2>References</h2>
+        <ul>
+            <li><a href="https://www.youtube.com/watch?v=kE5NjpzNPps">Point Location and Trapezoidal Map (1/5) | Computational Geometry - Lecture 06</a> (plus the other 4 videos)</li>
+            <li>Dr. Mount’s notes on <a href="https://www.cs.umd.edu/class/spring2020/cmsc754/Lects/lect08-trap-map.pdf">Trapezoidal Maps</a></li>
+            <li><i>Computational Geometry: Algorithms and Applications</i> (this course’s textbook)</li>
+            <li>Dylan Bostian’s <a href="https://people.rit.edu/~dmb3440/app.html">project for this class</a></li>
+        </ul>
+
+        <h2>Timeline</h2>
+        <p>To complete this project in a timely manner, we have this tentative schedule of targets:</p>
+        <ul>
+            <li>by end of wk6 - Write (draft) background/description of the algorithm; familiarize ourselves with its operation</li>
+            <li>by end of wk6 - Get some test data</li>
+            <li>by end of wk7 - Start drawing/UI code</li>
+            <li>by end of wk8 - Implement data structure construction</li>
+            <li>by end of wk10 - Implement point querying on the data structure</li>
+            <li>by end of wk13 - Finalize visualization & UI (including the side-by-side pseudocode of the algorithm)</li>
+        </ul>
+        <p>To divide up the work, Quinn will be handling the graphical and interactive portions of the project, and Theo will be responsible for implementing the algorithm. We'll work together to interface these sides of the project.</p>
+    </main>
+
+    <footer>
+        Theo Lincoln and Quinn Tucker
+    </footer>
+</body>
+</html>
