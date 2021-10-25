@@ -36,6 +36,11 @@ Point-location structure:
   * Point nodes
   * Segment nodes
   * Leaf nodes
+  * all nodes share these properties:
+    * parents - a list of parent nodes, usually size 1
+    * children - a list of children, either 2 or 0
+    * data 
+    * traverse function - a function pointer that indicates which child to trace
 * Each node has zero or 2 outgoing edges
   * Nodes with zero outgoing are leaves/trapezoids
 * 2 types of internal nodes:
@@ -80,3 +85,77 @@ A new segment insertion determines the trapezoids being affected, and each trape
 * Case 1: 1 endpoint in trapezoid - creates 3 new trapezoids (5 new nodes)
 * Case 2: 2 endpoints in trapezoid - creates 4 new trapezoids (7 new nodes)
 * Case 3: no endpoints in trapezoid - creates 2 new trapezoids (3 new nodes)
+
+Psuedocode
+
+```
+function insertSeg(segment, tmap) {
+    // takes in a segment and a trapezoidal map
+    // inserts the segment into the map
+    trapsList = findTrapsCrossed(segment,tmap)
+    // for each trapezoid, we can assume that the segment passes through it, so we only need to check endpoints
+    for t in trapsList {
+        p = t.parent
+        if(t.is_within(segment.p1) && t.is_within(segment.p2)) {
+            // case 2
+        }
+        else if(t.is_within(segment.p1) || t.is_within(segment.p2)) {
+            // case 1
+        }
+        else {
+            // case 3 
+        }
+    }
+}
+
+function findTrapsCrossed(segment,tmap) {
+    // takes in a segment and trapezoidal map
+    // traverses the map to find each trapezoid crossed by the segment
+    // it may be best or tlist to be a sort of dictionary with the trapezoid and the point used to select it from the x_node
+    tlist = []
+    x_nodes_to_check = []
+    // traverse to L endpoint
+    currentNode = tmap.root
+    last_point = null;
+    while(currentNode has children) {
+        if currentNode is x_node {
+            if direction for segment.p1 and segment.p2 are not equal {
+                x_nodes_to_check.append(new point(currentNode.point.x,segment.getYpos(currentNode.point.x)));
+            }
+            last_point = currentNode.point
+        }
+        currentNode = currentNode.traverse(segment.p1);
+    }
+    tlist.append(currentNode,last_point);
+    // traverse to R endpoint
+    currentNode = tmap.root
+    while(currentNode has children) {
+        if currentNode is x_node {
+            if direction for segment.p1 and segment.p2 are not equal and currentNode not in x_nodes_to_check {
+                x_nodes_to_check.append(new point(currentNode.point.x,segment.getYpos(currentNode.point.x)))
+            }
+            last_point = currentNode.point
+        }
+        currentNode = currentNode.traverse(segment.p2);
+    }
+    tlist.append(currentNode, last_point);
+    // sort the list of new points by x value
+    x_nodes_to_check.sort()
+    // traverse the list of new points, adding points to the list if they need to be explored
+    // perhaps change the x_nodes_to_check to a priority queue? Then this would be a while loop, rather than a for loop, but otherwise be the same
+    for point in x_nodes_to_check {
+        currentNode = tmap.root
+        while currentNode has children {
+            if currentNode is x_node {
+                if direction for point and segment.p2 are not equal and currentNode not in x_nodes_to_check {
+                    x_nodes_to_check.append(new point(currentNode.point.x,segment.getYpos(currentNode.point.x)))
+                }
+                last_point = currentNode.point
+            }
+            currentNode = currentNode.traverse(point);
+        }
+        tlist.append(currentNode, last_point);
+    }
+    return tlist;
+}
+```
