@@ -89,6 +89,20 @@ A new segment insertion determines the trapezoids being affected, and each trape
 Psuedocode
 
 ```
+class node {
+  parent = []
+  children = []
+  data = \\ point/edge/trapezoid
+  navigate = function pointer
+}
+
+class tree {
+  root = node
+  x_count = number
+  y_count = number
+  t_count = number
+}
+
 function insertSeg(segment, tmap) {
     // takes in a segment and a trapezoidal map
     // inserts the segment into the map
