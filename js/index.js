@@ -31,13 +31,6 @@ class Visualization {
         this.segments = [];
         this.highlighted_segment = null;
         this.unpause_resolvers = [];
-
-        // set up the step_button event handler that unpauses the visualization
-        this.step_handler = () => {
-            this.unpause_resolvers.forEach(resolve => resolve());
-            this.unpause_resolvers = [];
-        };
-        step_button.addEventListener('click', this.step_handler);
     }
 
     draw() {
@@ -63,6 +56,15 @@ class Visualization {
             const color = this.highlighted_segment === segment ? 'blue' : 'gray';
             segment.draw(color);
         }
+    }
+
+    start() {
+        // set up the step_button event handler that unpauses the visualization
+        this.step_handler = () => {
+            this.unpause_resolvers.forEach(resolve => resolve());
+            this.unpause_resolvers = [];
+        };
+        step_button.addEventListener('click', this.step_handler);
     }
 
     async draw_and_pause() {
@@ -94,22 +96,33 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.height = 600;
 
     const data = INPUT_FILES['qt2393'];
-    const segments = data.segments.map(s => new Segment(new Point(s.x1, s.y1), new Point(s.x2, s.y2)));
+    const segments = data.segments.map(s =>
+        new Segment(new Point(s.x1, s.y1), new Point(s.x2, s.y2)));
     const visualization = new Visualization(data);
-    algorithm(visualization, segments);
+    visualization.draw();
+
+    function start() {
+        step_button.removeEventListener('click', start);
+        step_button.textContent = 'Step';
+        visualization.start();
+        algorithm(visualization, segments);
+    }
+    step_button.addEventListener('click', start);
 });
 
 
 async function algorithm(vis, segments) {
     for (const segment of segments) {
-        vis.segments.push(segment);
+        // do some algorithm work, e.g. add the segment to the trapezoidal map
+        //...
 
-        // visualize and pause
+        // update the visualization and pause
+        vis.segments.push(segment);
         vis.highlighted_segment = segment;
         await vis.draw_and_pause();
     }
 
-    // all done
+    // mark the visualization as finished
     vis.highlighted_segment = null;
     vis.finished();
 }
