@@ -3,6 +3,9 @@ class Point {
         this.x = x;
         this.y = y;
     }
+    equals(pt) {
+        return (this.x == pt.x) && (this.y == pt.y);
+    }
 }
 
 class Segment {
@@ -14,6 +17,16 @@ class Segment {
             this.start = p2;
             this.end = p1;
         }
+        this.m = (this.end.y - this.start.y) / (this.end.x - this.start.x)
+        this.b = pt1.y - this.m * pt1.x
+    }
+
+    equals(seg) {
+        return (this.pt1.equals(seg.pt1)) && (this.pt2.equals(seg.pt2));
+    }
+
+    getYpos(xpos) {
+        return this.m * xpos + this.b;
     }
 
     draw(color) {
@@ -22,6 +35,19 @@ class Segment {
         ctx.moveTo(this.start.x, this.start.y);
         ctx.lineTo(this.end.x, this.end.y);
         ctx.stroke();
+    }
+
+    compare(pt) {
+        let ypos = this.m * pt.x + this.b;
+        if(pt.y > ypos) {
+            return 1;
+        }
+        else if(pt.y < ypos) {
+            return -1;
+        }
+        else {
+            return 0;
+        }
     }
 }
 
