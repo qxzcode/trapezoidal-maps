@@ -72,6 +72,9 @@ class tree {
     }  
   
     insertSeg(segment, tmap) {
+        // what happens when one of our segment points shares a point with one already in the map?
+        // 
+
         // takes in a segment and a trapezoidal map
         // inserts the segment into the map
         trapsList = this.findTrapsCrossed(segment,tmap)
