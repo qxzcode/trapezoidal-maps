@@ -1,5 +1,5 @@
-class trapezoid {
-    constructor(x_min,x_max,top_seg,bot_seg) {
+class Trapezoid {
+    constructor(x_min, x_max, top_seg, bot_seg) {
         this.xmin = x_min;
         this.xmax = x_max;
         this.top = top_seg;
@@ -7,7 +7,7 @@ class trapezoid {
     }
 
     equals(t1) {
-        return (this.xmin == t1.xmin) && (this.xmax == t1.xmax) && (this.top.equals(t1.top)) && (this.bot.equals(t1.bot)); 
+        return (this.xmin === t1.xmin) && (this.xmax === t1.xmax) && (this.top.equals(t1.top)) && (this.bot.equals(t1.bot));
     }
 
     is_within(pt) {
@@ -15,7 +15,58 @@ class trapezoid {
         res = (this.xmin <= pt.x) && (this.xmax > pt.x) && (this.top.compare(pt) <= 0) && (this.bot.compare(pt) > 0);
         return res;
     }
+
+    /** Returns the trapezoid that the point is within (this). */
+    locate(point) {
+        return this;
+    }
 }
+
+class XNode {
+    constructor(point, leftChild, rightChild) {
+        this.point = point;
+        this.leftChild = leftChild;
+        this.rightChild = rightChild;
+    }
+
+    /** Returns the trapezoid that the point is within. */
+    locate(point) {
+        const child = (point.x < this.point.x) ? this.leftChild : this.rightChild;
+        return child.locate(point);
+    }
+}
+
+class YNode {
+    constructor(segment, leftChild, rightChild) {
+        this.segment = segment;
+        this.leftChild = leftChild;
+        this.rightChild = rightChild;
+    }
+
+    /** Returns the trapezoid that the point is within. */
+    locate(point) {
+        const child = (point.y < this.segment.getYpos(point.x)) ? this.leftChild : this.rightChild;
+        return child.locate(point);
+    }
+}
+
+class TrapezoidalMap {
+    constructor() {
+        this.root = new Trapezoid(null, null, null, null);
+    }
+
+    /** Inserts a segment into the map. */
+    insert(segment) {
+        // locate the trapezoid containing each endpoint of the segment
+        const left = this.root.locate(segment.left_pt);
+        const right = this.root.locate(segment.right_pt);
+
+        //...
+    }
+}
+
+
+
 
 const nodeTypes = {
     X_NODE: "x_node",
@@ -23,7 +74,7 @@ const nodeTypes = {
     T_NODE: "t_node",
 }
 
-class node {
+class Node {
     constructor(d,f,type){
         this.parent = [];
         this.left = null;
@@ -58,8 +109,8 @@ class node {
         return left;
     }
 }
-  
-class tree {
+
+class Tree {
     constructor(r_node){
         root = r_node;
         x_count = 0;
@@ -69,12 +120,9 @@ class tree {
 
     insertNode(in_node){
 
-    }  
-  
-    insertSeg(segment, tmap) {
-        // what happens when one of our segment points shares a point with one already in the map?
-        // 
+    }
 
+    insertSeg(segment, tmap) {
         // takes in a segment and a trapezoidal map
         // inserts the segment into the map
         trapsList = this.findTrapsCrossed(segment,tmap)
@@ -92,7 +140,7 @@ class tree {
                 // case 1
             }
             else {
-                // case 3 
+                // case 3
             }
             if(isLeft) {
                 p.left = nroot;
@@ -102,7 +150,7 @@ class tree {
             }
         });
     }
-  
+
     findTrapsCrossed(segment,tmap) {
         // takes in a segment and trapezoidal map
         // traverses the map to find each trapezoid crossed by the segment

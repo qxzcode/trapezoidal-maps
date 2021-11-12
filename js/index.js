@@ -3,22 +3,23 @@ class Point {
         this.x = x;
         this.y = y;
     }
+
     equals(pt) {
-        return (this.x == pt.x) && (this.y == pt.y);
+        return (this.x === pt.x) && (this.y === pt.y);
     }
 }
 
 class Segment {
     constructor(p1, p2) {
         if (p1.x < p2.x) {
-            this.start = p1;
-            this.end = p2;
+            this.left_pt = p1;
+            this.right_pt = p2;
         } else {
-            this.start = p2;
-            this.end = p1;
+            this.left_pt = p2;
+            this.right_pt = p1;
         }
-        this.m = (this.end.y - this.start.y) / (this.end.x - this.start.x)
-        this.b = pt1.y - this.m * pt1.x
+        this.m = (this.right_pt.y - this.left_pt.y) / (this.right_pt.x - this.left_pt.x);
+        this.b = p1.y - this.m * p1.x;
     }
 
     equals(seg) {
@@ -32,20 +33,18 @@ class Segment {
     draw(color) {
         ctx.strokeStyle = color;
         ctx.beginPath();
-        ctx.moveTo(this.start.x, this.start.y);
-        ctx.lineTo(this.end.x, this.end.y);
+        ctx.moveTo(this.left_pt.x, this.left_pt.y);
+        ctx.lineTo(this.right_pt.x, this.right_pt.y);
         ctx.stroke();
     }
 
     compare(pt) {
-        let ypos = this.m * pt.x + this.b;
-        if(pt.y > ypos) {
+        let ypos = this.getYpos(pt.x);
+        if (pt.y > ypos) {
             return 1;
-        }
-        else if(pt.y < ypos) {
+        } else if (pt.y < ypos) {
             return -1;
-        }
-        else {
+        } else {
             return 0;
         }
     }
