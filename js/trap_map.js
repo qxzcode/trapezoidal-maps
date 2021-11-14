@@ -1,21 +1,32 @@
 //@ts-check
 
 class Point {
+    /**
+     * @param {number} x the x coordinate
+     * @param {number} y the y coordinate
+     */
     constructor(x, y) {
         this.x = x;
         this.y = y;
     }
 
+    /**
+     * @param {Point} pt the `Point` to compare to
+     */
     equals(pt) {
         return (this.x === pt.x) && (this.y === pt.y);
     }
 
     to_string() {
-        return 'x'+this.x+'y'+this.y;
+        return 'x' + this.x + 'y' + this.y;
     }
 }
 
 class Segment {
+    /**
+     * @param {Point} p1 one endpoint of the segment
+     * @param {Point} p2 the other endpoint of the segment
+     */
     constructor(p1, p2) {
         if (p1.x < p2.x) {
             this.p1 = p1;
@@ -29,18 +40,28 @@ class Segment {
     }
 
     to_string() {
-        return 'p1'+this.p1.to_string()+'p2'+this.p2.to_string();
+        return 'p1' + this.p1.to_string() + 'p2' + this.p2.to_string();
     }
 
+    /**
+     * @param {Segment} seg the `Segment` to compare to
+     */
     equals(seg) {
         return (this.p1.equals(seg.p1)) && (this.p2.equals(seg.p2));
     }
 
+    /**
+     * @param {number} xpos the x coordinate to query
+     */
     getYpos(xpos) {
         return this.m * xpos + this.b;
     }
 
-    draw(ctx,color) {
+    /**
+     * @param {CanvasRenderingContext2D} ctx the canvas rendering context
+     * @param {string} color the drawn segment color (a CSS color string)
+     */
+    draw(ctx, color) {
         ctx.strokeStyle = color;
         ctx.beginPath();
         ctx.moveTo(this.p1.x, this.p1.y);
@@ -48,6 +69,9 @@ class Segment {
         ctx.stroke();
     }
 
+    /**
+     * @param {Point} pt
+     */
     compare(pt) {
         let ypos = this.getYpos(pt.x);
         if (pt.y > ypos) {
@@ -61,13 +85,19 @@ class Segment {
 }
 
 class SegPair {
-    constructor(seg1,seg2) {
+    constructor(seg1, seg2) {
         this.top = seg1;
         this.bot = seg2;
     }
 }
 
 class Trapezoid {
+    /**
+     * @param {number} x_min
+     * @param {number} x_max
+     * @param {Segment} top_seg
+     * @param {Segment} bot_seg
+     */
     constructor(x_min, x_max, top_seg, bot_seg) {
         this.xmin = x_min;
         this.xmax = x_max;
@@ -75,30 +105,48 @@ class Trapezoid {
         this.bot = bot_seg;
     }
 
+    /**
+     * @param {Trapezoid} t1 the `Trapezoid` to compare to
+     */
     equals(t1) {
         return (this.xmin === t1.xmin) && (this.xmax === t1.xmax) && (this.top.equals(t1.top)) && (this.bot.equals(t1.bot));
     }
 
+    /**
+     * Tests whether a point is within this `Trapezoid`.
+     * @param {Point} pt the point to test
+     */
     is_within(pt) {
         let res = false;
         res = (this.xmin <= pt.x) && (this.xmax > pt.x) && (this.top.compare(pt) <= 0) && (this.bot.compare(pt) > 0);
         return res;
     }
 
-    /** Returns the trapezoid that the point is within (this). */
-    locate(point) {
+    /**
+     * Returns the trapezoid that the point is within (this).
+     * @param {Point} _point
+     */
+    locate(_point) {
         return this;
     }
 }
 
 class XNode {
+    /**
+     * @param {Point} point
+     * @param {XNode|YNode|Trapezoid} leftChild
+     * @param {XNode|YNode|Trapezoid} rightChild
+     */
     constructor(point, leftChild, rightChild) {
         this.point = point;
         this.leftChild = leftChild;
         this.rightChild = rightChild;
     }
 
-    /** Returns the trapezoid that the point is within. */
+    /**
+     * Returns the trapezoid that the point is within.
+     * @param {Point} point
+     */
     locate(point) {
         const child = (point.x < this.point.x) ? this.leftChild : this.rightChild;
         return child.locate(point);
@@ -106,13 +154,21 @@ class XNode {
 }
 
 class YNode {
+    /**
+     * @param {Segment} segment
+     * @param {XNode|YNode|Trapezoid} leftChild
+     * @param {XNode|YNode|Trapezoid} rightChild
+     */
     constructor(segment, leftChild, rightChild) {
         this.segment = segment;
         this.leftChild = leftChild;
         this.rightChild = rightChild;
     }
 
-    /** Returns the trapezoid that the point is within. */
+    /**
+     * Returns the trapezoid that the point is within.
+     * @param {Point} point
+     */
     locate(point) {
         const child = (point.y < this.segment.getYpos(point.x)) ? this.leftChild : this.rightChild;
         return child.locate(point);
@@ -120,8 +176,12 @@ class YNode {
 }
 
 class TrapezoidalMap {
+    /**
+     * @param {Point} min_pt
+     * @param {Point} max_pt
+     */
     constructor(min_pt, max_pt) {
-        const seg1 = new Segment(new Point(min_pt.x,max_pt.y), max_pt);
+        const seg1 = new Segment(new Point(min_pt.x, max_pt.y), max_pt);
         const seg2 = new Segment(min_pt, new Point(max_pt.x, min_pt.y));
         const t0 = new Trapezoid(min_pt.x, max_pt.x, seg1, seg2);
         const n = new Node(t0, null, nodeTypes.T_NODE);
@@ -133,7 +193,7 @@ class TrapezoidalMap {
         // locate the trapezoid containing each endpoint of the segment
         // const left = this.root.locate(segment.left_pt);
         // const right = this.root.locate(segment.right_pt);
-        this.root.insertSeg(segment,this.root);
+        this.root.insertSeg(segment, this.root);
         //...
     }
 }
@@ -148,32 +208,46 @@ const nodeTypes = {
 }
 
 class Node {
-    constructor(d,f,type){
+    /**
+     * @param {any} d
+     * @param {(pt: Point) => boolean} f
+     * @param {string} type
+     */
+    constructor(d, f, type) {
+        /** @type Set<Node> */
         this.parent = new Set();
+        /** @type Node= */
         this.left = null;
+        /** @type Node= */
         this.right = null;
         this.data = d;
         this.navigate = f;
         this.type = type;
     }
 
+    /**
+     * @param {Node} n the `Node` to compare to
+     */
     equals(n) {
         return this.data.equals(n.data);
     }
 
-    hasChildren(){
-        return !(this.left === null) && !(this.right === null);
+    hasChildren() {
+        return this.left !== null && this.right !== null;
     }
 
+    /**
+     * @param {Point} pt
+     */
     navigate(pt) {
         let left = true;
-        switch(this.type){
+        switch (this.type) {
             case nodeTypes.X_NODE:
-                if(pt.x >= this.data.x) {
+                if (pt.x >= this.data.x) {
                     left = false;
                 }
             case nodeTypes.Y_NODE:
-                if(this.data.compare(pt) < 0){
+                if (this.data.compare(pt) < 0) {
                     left = false;
                 }
             case nodeTypes.T_NODE:
@@ -184,25 +258,34 @@ class Node {
 }
 
 class Tree {
-    constructor(r_node){
+    /**
+     * @param {Node} r_node the initial root node
+     */
+    constructor(r_node) {
         this.root = r_node;
         this.x_count = 0;
         this.y_count = 0;
         this.t_count = 1;
+
+        /** @type {{ [key: string]: Node[] }} */
         this.seg_dict = {};
         let sp = 'top' + r_node.data.top.to_string() + 'bot' + r_node.data.bot.to_string();
         this.seg_dict[sp] = [r_node];
     };
 
-    insertNode(in_node){
+    insertNode(in_node) {
 
     }
 
+    /**
+     * @param {Segment} segment
+     * @param {Tree} tmap
+     */
     insertSeg(segment, tmap) {
         // takes in a segment and a trapezoidal map
         // inserts the segment into the map
-        
-        let trapsList = this.findTrapsCrossed(segment,tmap)
+
+        let trapsList = this.findTrapsCrossed(segment, tmap)
         // for each trapezoid, we can assume that the segment passes through it, so we only need to check endpoints
         trapsList.forEach(t => {
             let p = Array.from(t.parent);
@@ -215,29 +298,29 @@ class Tree {
             }
             this.seg_dict
             let isLeft = false;
-            if(p.length>0) {
-                isLeft = (t.equals(p[0].left));
+            if (p.length > 0) {
+                isLeft = t.equals(p[0].left);
             }
             // determine our case
-            let nroot = null;
+            let nroot;
             this.t_count--;
-            if(t.data.is_within(segment.p1) && t.data.is_within(segment.p2)) {
+            if (t.data.is_within(segment.p1) && t.data.is_within(segment.p2)) {
                 // case 2
-                nroot = this.replaceTrapCase2(t,segment);
+                nroot = this.replaceTrapCase2(t, segment);
             }
-            else if(t.data.is_within(segment.p1) || t.data.is_within(segment.p2)) {
+            else if (t.data.is_within(segment.p1) || t.data.is_within(segment.p2)) {
                 // case 1
                 const pt = t.data.is_within(segment.p1) ? segment.p1 : segment.p2;
-                nroot = this.replaceTrapCase1(t,pt,segment);
+                nroot = this.replaceTrapCase1(t, pt, segment);
             }
             else {
                 // case 3
-                nroot = this.replaceTrapCase3(t,segment);
+                nroot = this.replaceTrapCase3(t, segment);
             }
-            if(!(p.length>0)) {
+            if (!(p.length > 0)) {
                 this.root = nroot;
             } else {
-                if(isLeft) {
+                if (isLeft) {
                     p[0].left = nroot;
                 }
                 else {
@@ -245,40 +328,41 @@ class Tree {
                 }
                 nroot.parent.add(p[0]);
             }
-
         });
 
         this.mergeTraps();
-
     }
 
-    checkForMerge(trapNode){
+    /**
+     * @param {Node} trapNode
+     */
+    checkForMerge(trapNode) {
         let searchObj = 'top' + trapNode.data.top.to_string() + 'bot' + trapNode.data.bot.to_string();
-        if( this.seg_dict.hasOwnProperty(searchObj)) {
+        if (this.seg_dict.hasOwnProperty(searchObj)) {
             const curTraps = this.seg_dict[searchObj];
             const adjTraps = curTraps.filter((val) => (val.data.xmin == trapNode.data.xmax || val.data.xmax == trapNode.data.xmin));
-            if(adjTraps.length < 1) {
+            if (adjTraps.length < 1) {
                 // no adjacent trapezoids to merge
                 this.seg_dict[searchObj].push(trapNode);
                 return trapNode;
-            }else {
+            } else {
                 const remTraps = curTraps.filter(val => (val.data.xmin != trapNode.data.xmax && val.data.xmax != trapNode.data.xmin));
                 this.seg_dict[searchObj] = remTraps;
                 let xmin = Number.MAX_VALUE;
                 let xmax = Number.MIN_VALUE;
                 for (let index = 0; index < adjTraps.length; index++) {
                     const zoid = adjTraps[index];
-                    if(zoid.data.xmin < xmin) xmin = zoid.data.xmin;
-                    if(zoid.data.xmax > xmax) xmax = zoid.data.xmax;
+                    if (zoid.data.xmin < xmin) xmin = zoid.data.xmin;
+                    if (zoid.data.xmax > xmax) xmax = zoid.data.xmax;
                 }
-                let newTrap = new Trapezoid(xmin,xmax,trapNode.data.top,trapNode.data.bot);
-                let newTrapNode = new Node(newTrap,null,nodeTypes.T_NODE);
+                let newTrap = new Trapezoid(xmin, xmax, trapNode.data.top, trapNode.data.bot);
+                let newTrapNode = new Node(newTrap, null, nodeTypes.T_NODE);
                 adjTraps.forEach(zoid => {
                     const zparents = zoid.parent;
                     zparents.forEach(p => {
-                        if(p.left === zoid){
+                        if (p.left === zoid) {
                             p.left = newTrapNode;
-                        }else {
+                        } else {
                             p.right = newTrapNode;
                         }
                         newTrapNode.parent.add(p);
@@ -286,48 +370,53 @@ class Tree {
                 });
                 return newTrapNode;
             }
-
         }
-        else{
+        else {
             this.seg_dict[searchObj] = [trapNode];
             return trapNode;
         }
     }
 
-    replaceTrapCase1(trapNode,pt,seg) {
+    /**
+     * @param {Node} trapNode
+     * @param {Point} pt
+     * @param {Segment} seg
+     */
+    replaceTrapCase1(trapNode, pt, seg) {
+        /** @type Trapezoid */
         const trap = trapNode.data;
-        let nodeFunc = () => {};
-        let t1 = null;
-        if(pt.equals(seg.p1)) {
-            nodeFunc = (in_pt)=> { return pt.x >= in_pt.x };
-            t1 = new Trapezoid(trap.xmin,pt.x,trap.top,trap.bot);
+        let nodeFunc;
+        let t1;
+        if (pt.equals(seg.p1)) {
+            nodeFunc = (in_pt) => { return pt.x >= in_pt.x };
+            t1 = new Trapezoid(trap.xmin, pt.x, trap.top, trap.bot);
         }
         else {
             nodeFunc = (in_pt) => { return pt.x >= in_pt.x };
-            t1 = new Trapezoid(pt.x,trap.xmax,trap.top,trap.bot);
+            t1 = new Trapezoid(pt.x, trap.xmax, trap.top, trap.bot);
         }
-        let p = new Node(pt,nodeFunc,nodeTypes.X_NODE);
-        let tNode = new Node(t1,null,nodeTypes.T_NODE);
+        let p = new Node(pt, nodeFunc, nodeTypes.X_NODE);
+        let tNode = new Node(t1, null, nodeTypes.T_NODE);
         tNode = this.checkForMerge(tNode);
         let searchObj = 'top' + tNode.data.top.to_string() + 'bot' + tNode.data.bot.to_string();
         this.seg_dict[searchObj].push(tNode);
-        
-        let t_above = null;
-        let t_below = null;
-        if(pt.equals(seg.p1)) {
+
+        let t_above;
+        let t_below;
+        if (pt.equals(seg.p1)) {
             p.left = tNode;
-            t_above = new Trapezoid(pt.x,trap.xmax,trap.top,seg);
-            t_below = new Trapezoid(pt.x,trap.xmax,seg,trap.bot);
+            t_above = new Trapezoid(pt.x, trap.xmax, trap.top, seg);
+            t_below = new Trapezoid(pt.x, trap.xmax, seg, trap.bot);
         }
         else {
             p.right = tNode;
-            t_above = new Trapezoid(trap.xmax,pt.x,trap.top,seg);
-            t_below = new Trapezoid(trap.xmax,pt.x,seg,trap.bot);
+            t_above = new Trapezoid(trap.xmax, pt.x, trap.top, seg);
+            t_below = new Trapezoid(trap.xmax, pt.x, seg, trap.bot);
         }
         tNode.parent.add(p);
-        let s = new Node(seg,(in_pt) => { return seg.compare(in_pt) > 0}, nodeTypes.Y_NODE);
-        let tNode2 = new Node(t_above,null,nodeTypes.T_NODE);
-        let tNode3 = new Node(t_below,null,nodeTypes.T_NODE);
+        let s = new Node(seg, (in_pt) => { return seg.compare(in_pt) > 0 }, nodeTypes.Y_NODE);
+        let tNode2 = new Node(t_above, null, nodeTypes.T_NODE);
+        let tNode3 = new Node(t_below, null, nodeTypes.T_NODE);
         tNode2 = this.checkForMerge(tNode2);
         searchObj = 'top' + tNode2.data.top.to_string() + 'bot' + tNode2.data.bot.to_string();
         this.seg_dict[searchObj].push(tNode2);
@@ -338,7 +427,7 @@ class Tree {
         s.right = tNode3;
         tNode2.parent.add(s);
         tNode3.parent.add(s);
-        if(pt.equals(seg.p1)) {
+        if (pt.equals(seg.p1)) {
             p.right = s;
         } else {
             p.left = s;
@@ -350,24 +439,29 @@ class Tree {
         return p;
     }
 
-    replaceTrapCase2(trapNode,seg) {
+    /**
+     * @param {Node} trapNode
+     * @param {Segment} seg
+     */
+    replaceTrapCase2(trapNode, seg) {
+        /** @type Trapezoid */
         const trap = trapNode.data;
-        let nodeFunc = (in_pt)=> { return seg.p1.x >= in_pt.x };
-        let t1 = new Trapezoid(trap.xmin,seg.p1.x,trap.top,trap.bot);
+        let nodeFunc = (in_pt) => { return seg.p1.x >= in_pt.x };
+        let t1 = new Trapezoid(trap.xmin, seg.p1.x, trap.top, trap.bot);
         let nodeFunc2 = (in_pt) => { return seg.p2.x >= in_pt.x };
-        let t2 = new Trapezoid(seg.p2.x,trap.xmax,trap.top,trap.bot);
+        let t2 = new Trapezoid(seg.p2.x, trap.xmax, trap.top, trap.bot);
 
-        let tNode = new Node(t1,null,nodeTypes.T_NODE);
+        let tNode = new Node(t1, null, nodeTypes.T_NODE);
         tNode = this.checkForMerge(tNode);
         let searchObj = 'top' + tNode.data.top.to_string() + 'bot' + tNode.data.bot.to_string();
         this.seg_dict[searchObj].push(tNode);
-        let tNode2 = new Node(t2,null,nodeTypes.T_NODE)
+        let tNode2 = new Node(t2, null, nodeTypes.T_NODE)
         tNode2 = this.checkForMerge(tNode2);
         searchObj = 'top' + tNode2.data.top.to_string() + 'bot' + tNode2.data.bot.to_string();
         this.seg_dict[searchObj].push(tNode2);
 
-        let p = new Node(seg.p1,nodeFunc,nodeTypes.X_NODE);
-        let q = new Node(seg.p2,nodeFunc2,nodeTypes.X_NODE);
+        let p = new Node(seg.p1, nodeFunc, nodeTypes.X_NODE);
+        let q = new Node(seg.p2, nodeFunc2, nodeTypes.X_NODE);
 
         p.right = q;
         q.parent.add(p);
@@ -376,15 +470,15 @@ class Tree {
         q.right = tNode2;
         tNode2.parent.add(q);
 
-        let t_above = new Trapezoid(seg.p1.x,seg.p2.x,trap.top,seg);
-        let t_below = new Trapezoid(seg.p1.x,seg.p2.x,seg,trap.bot);
+        let t_above = new Trapezoid(seg.p1.x, seg.p2.x, trap.top, seg);
+        let t_below = new Trapezoid(seg.p1.x, seg.p2.x, seg, trap.bot);
 
-        let s = new Node(seg,(in_pt) => { return seg.compare(in_pt) > 0}, nodeTypes.Y_NODE);
-        let tNode3 = new Node(t_above,null,nodeTypes.T_NODE);
+        let s = new Node(seg, (in_pt) => { return seg.compare(in_pt) > 0 }, nodeTypes.Y_NODE);
+        let tNode3 = new Node(t_above, null, nodeTypes.T_NODE);
         tNode3 = this.checkForMerge(tNode3);
         searchObj = 'top' + tNode3.data.top.to_string() + 'bot' + tNode3.data.bot.to_string();
         this.seg_dict[searchObj].push(tNode3);
-        let tNode4 = new Node(t_below,null,nodeTypes.T_NODE);
+        let tNode4 = new Node(t_below, null, nodeTypes.T_NODE);
         tNode4 = this.checkForMerge(tNode4);
         searchObj = 'top' + tNode4.data.top.to_string() + 'bot' + tNode4.data.bot.to_string();
         this.seg_dict[searchObj].push(tNode4);
@@ -401,17 +495,22 @@ class Tree {
         return p;
     }
 
-    replaceTrapCase3(trapNode,seg) {
+    /**
+     * @param {Node} trapNode
+     * @param {Segment} seg
+     */
+    replaceTrapCase3(trapNode, seg) {
+        /** @type Trapezoid */
         const trap = trapNode.data;
-        let t_above = new Trapezoid(trap.xmin,trap.xmax,trap.top,seg);
-        let t_below = new Trapezoid(trap.xmin,trap.xmax,seg,trap.bot);
+        let t_above = new Trapezoid(trap.xmin, trap.xmax, trap.top, seg);
+        let t_below = new Trapezoid(trap.xmin, trap.xmax, seg, trap.bot);
 
-        let s = new Node(seg,(in_pt) => { return seg.compare(in_pt) > 0}, nodeTypes.Y_NODE);
-        let tNode2 = new Node(t_above,null,nodeTypes.T_NODE);
+        let s = new Node(seg, (in_pt) => { return seg.compare(in_pt) > 0 }, nodeTypes.Y_NODE);
+        let tNode2 = new Node(t_above, null, nodeTypes.T_NODE);
         tNode2 = this.checkForMerge(tNode2);
         let searchObj = 'top' + tNode2.data.top.to_string() + 'bot' + tNode2.data.bot.to_string();
         this.seg_dict[searchObj].push(tNode2);
-        let tNode3 = new Node(t_below,null,nodeTypes.T_NODE);
+        let tNode3 = new Node(t_below, null, nodeTypes.T_NODE);
         tNode3 = this.checkForMerge(tNode3);
         searchObj = 'top' + tNode3.data.top.to_string() + 'bot' + tNode3.data.bot.to_string();
         this.seg_dict[searchObj].push(tNode3);
@@ -427,33 +526,39 @@ class Tree {
     }
 
     mergeTraps() {
-        
+
     }
 
-    findTrapsCrossed(segment,tmap) {
-        // takes in a segment and trapezoidal map
-        // traverses the map to find each trapezoid crossed by the segment
-        // it may be best or tlist to be a sort of dictionary with the trapezoid and the point used to select it from the x_node
+    /**
+     * Takes in a segment and trapezoidal map.
+     * Traverses the map to find each trapezoid crossed by the segment.
+     * @param {Segment} segment
+     * @param {Tree} tmap
+     */
+    findTrapsCrossed(segment, tmap) {
+        // it may be best for tlist to be a sort of dictionary with the trapezoid and the point used to select it from the x_node
+        /** @type Set<Node> */
         let tlist = new Set();
+        /** @type Set<Node> */
         let x_nodes_to_check = new Set();
         // traverse to L endpoint
         let currentNode = this.root;
         // let last_point = null;
-        while(currentNode.hasChildren()) {
+        while (currentNode.hasChildren()) {
             if (currentNode.type == nodeTypes.X_NODE) {
-                let nav1 = currentNode.navigate(segment.p1);
-                let nav2 = currentNode.navigate(segment.p2);
-                if(nav1 == null || nav2 == null) {
+                const nav1 = currentNode.navigate(segment.p1);
+                const nav2 = currentNode.navigate(segment.p2);
+                if (nav1 == null || nav2 == null) {
                     console.log("ILLEGAL NAVIGATION");
                     return;
                 }
-                if(nav1 != nav2) {
+                if (nav1 != nav2) {
                     x_nodes_to_check.add(currentNode);
                 }
                 // last_point = currentNode.point
             }
-            let n = currentNode.navigate(segment.p1);
-            if(n) {
+            const n = currentNode.navigate(segment.p1);
+            if (n) {
                 currentNode = currentNode.left;
             }
             else {
@@ -463,21 +568,21 @@ class Tree {
         tlist.add(currentNode); //,last_point);
         // traverse to R endpoint
         currentNode = this.root;
-        while(currentNode.hasChildren()) {
+        while (currentNode.hasChildren()) {
             if (currentNode.type == nodeTypes.X_NODE) {
-                let nav1 = currentNode.navigate(segment.p1);
-                let nav2 = currentNode.navigate(segment.p2);
-                if(nav1 == null || nav2 == null) {
+                const nav1 = currentNode.navigate(segment.p1);
+                const nav2 = currentNode.navigate(segment.p2);
+                if (nav1 == null || nav2 == null) {
                     console.log("ILLEGAL NAVIGATION");
                     return;
                 }
-                if(nav1 != nav2 && x_nodes_to_check.has(currentNode)) {
+                if (nav1 != nav2 && x_nodes_to_check.has(currentNode)) {
                     x_nodes_to_check.add(currentNode);
                 }
                 // last_point = currentNode.point
             }
-            let n = currentNode.navigate(segment.p2);
-            if(n) {
+            const n = currentNode.navigate(segment.p2);
+            if (n) {
                 currentNode = currentNode.left;
             }
             else {
@@ -490,25 +595,25 @@ class Tree {
         // traverse the list of new points, adding points to the list if they need to be explored
         // perhaps change the x_nodes_to_check to a priority queue? Then this would be a while loop, rather than a for loop, but otherwise be the same
         let xNodesList = Array.from(x_nodes_to_check);
-        while(xNodesList.length > 0) {
+        while (xNodesList.length > 0) {
             const point = xNodesList.pop();
             x_nodes_to_check.delete(point);
             currentNode = this.root;
-            while (currentNode.hasChildren()){
-                if (currentNode.type == nodeTypes.X_NODE ){
-                    let nav1 = currentNode.navigate(segment.p1);
-                    let nav2 = currentNode.navigate(segment.p2);
-                    if(nav1 == null || nav2 == null) {
+            while (currentNode.hasChildren()) {
+                if (currentNode.type == nodeTypes.X_NODE) {
+                    const nav1 = currentNode.navigate(segment.p1);
+                    const nav2 = currentNode.navigate(segment.p2);
+                    if (nav1 == null || nav2 == null) {
                         console.log("ILLEGAL NAVIGATION");
                         return;
                     }
-                    if(nav1 != nav2 && x_nodes_to_check.has(currentNode)) {
+                    if (nav1 != nav2 && x_nodes_to_check.has(currentNode)) {
                         x_nodes_to_check.add(currentNode);
                     }
                     // last_point = currentNode.point
                 }
-                let n = currentNode.navigate(point);
-                if(n) {
+                const n = currentNode.navigate(point);
+                if (n) {
                     currentNode = currentNode.left;
                 }
                 else {

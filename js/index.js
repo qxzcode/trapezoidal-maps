@@ -1,4 +1,4 @@
-
+//@ts-check
 import { Point, Segment, Trapezoid, TrapezoidalMap, Node, Tree } from './trap_map.js';
 
 class Visualization {
