@@ -1,54 +1,5 @@
-class Point {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-    }
 
-    equals(pt) {
-        return (this.x === pt.x) && (this.y === pt.y);
-    }
-}
-
-class Segment {
-    constructor(p1, p2) {
-        if (p1.x < p2.x) {
-            this.left_pt = p1;
-            this.right_pt = p2;
-        } else {
-            this.left_pt = p2;
-            this.right_pt = p1;
-        }
-        this.m = (this.right_pt.y - this.left_pt.y) / (this.right_pt.x - this.left_pt.x);
-        this.b = p1.y - this.m * p1.x;
-    }
-
-    equals(seg) {
-        return (this.pt1.equals(seg.pt1)) && (this.pt2.equals(seg.pt2));
-    }
-
-    getYpos(xpos) {
-        return this.m * xpos + this.b;
-    }
-
-    draw(color) {
-        ctx.strokeStyle = color;
-        ctx.beginPath();
-        ctx.moveTo(this.left_pt.x, this.left_pt.y);
-        ctx.lineTo(this.right_pt.x, this.right_pt.y);
-        ctx.stroke();
-    }
-
-    compare(pt) {
-        let ypos = this.getYpos(pt.x);
-        if (pt.y > ypos) {
-            return 1;
-        } else if (pt.y < ypos) {
-            return -1;
-        } else {
-            return 0;
-        }
-    }
-}
+import { Point, Segment, Trapezoid, TrapezoidalMap, Node, Tree } from './trap_map.js';
 
 class Visualization {
     constructor(data) {
@@ -79,7 +30,7 @@ class Visualization {
         ctx.lineWidth = 5 / scale;
         for (const segment of this.segments) {
             const color = this.highlighted_segment === segment ? 'blue' : 'gray';
-            segment.draw(color);
+            segment.draw(ctx,color);
         }
     }
 
@@ -137,9 +88,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 async function algorithm(vis, segments) {
+    let trapMap = new TrapezoidalMap(new Point(INPUT_FILES['qt2393'].x_min,INPUT_FILES['qt2393'].y_min), new Point(INPUT_FILES['qt2393'].x_max,INPUT_FILES['qt2393'].y_max));
     for (const segment of segments) {
         // do some algorithm work, e.g. add the segment to the trapezoidal map
         //...
+        trapMap.insert(segment);
+
+        console.log(trapMap.root.t_count);
 
         // update the visualization and pause
         vis.segments.push(segment);
