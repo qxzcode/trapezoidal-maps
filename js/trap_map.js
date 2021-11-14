@@ -596,8 +596,8 @@ class Tree {
         // perhaps change the x_nodes_to_check to a priority queue? Then this would be a while loop, rather than a for loop, but otherwise be the same
         let xNodesList = Array.from(x_nodes_to_check);
         while (xNodesList.length > 0) {
-            const point = xNodesList.pop();
-            x_nodes_to_check.delete(point);
+            const x_node = xNodesList.pop();
+            x_nodes_to_check.delete(x_node);
             currentNode = this.root;
             while (currentNode.hasChildren()) {
                 if (currentNode.type == nodeTypes.X_NODE) {
@@ -612,7 +612,7 @@ class Tree {
                     }
                     // last_point = currentNode.point
                 }
-                const n = currentNode.navigate(point);
+                const n = currentNode.navigate(x_node.data);
                 if (n) {
                     currentNode = currentNode.left;
                 }
