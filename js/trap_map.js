@@ -103,6 +103,7 @@ class Trapezoid {
         this.xmax = x_max;
         this.top = top_seg;
         this.bot = bot_seg;
+        this.color = `hsla(${Math.random()*360}, 100%, 50%, 0.1)`;
     }
 
     /**
