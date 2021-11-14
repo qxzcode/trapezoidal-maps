@@ -188,7 +188,10 @@ class TrapezoidalMap {
         this.root = new Tree(n);
     }
 
-    /** Inserts a segment into the map. */
+    /**
+     * Inserts a segment into the map.
+     * @param {Segment} segment the segment to insert
+     */
     insert(segment) {
         // locate the trapezoid containing each endpoint of the segment
         // const left = this.root.locate(segment.left_pt);

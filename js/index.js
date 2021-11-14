@@ -2,9 +2,14 @@
 import { Point, Segment, Trapezoid, TrapezoidalMap, Node, Tree } from './trap_map.js';
 
 class Visualization {
+    /**
+     * @param {{ x_min: number; y_min: number; x_max: number; y_max: number; }} data
+     */
     constructor(data) {
         this.data = data;
+        /** @type Segment[] */
         this.segments = [];
+        /** @type Segment= */
         this.highlighted_segment = null;
         this.unpause_resolvers = [];
     }
@@ -90,8 +95,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+/**
+ * @param {Visualization} vis
+ * @param {Segment[]} segments
+ */
 async function algorithm(vis, segments) {
-    let trapMap = new TrapezoidalMap(new Point(INPUT_FILES['qt2393'].x_min,INPUT_FILES['qt2393'].y_min), new Point(INPUT_FILES['qt2393'].x_max,INPUT_FILES['qt2393'].y_max));
+    const data = INPUT_FILES['qt2393'];
+    let trapMap = new TrapezoidalMap(new Point(data.x_min, data.y_min), new Point(data.x_max, data.y_max));
+
     for (const segment of segments) {
         // do some algorithm work, e.g. add the segment to the trapezoidal map
         //...
