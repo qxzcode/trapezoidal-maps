@@ -30,7 +30,7 @@ class Visualization {
         ctx.lineWidth = 5 / scale;
         for (const segment of this.segments) {
             const color = this.highlighted_segment === segment ? 'blue' : 'gray';
-            segment.draw(ctx,color);
+            segment.draw(ctx, color);
         }
     }
 
@@ -62,9 +62,12 @@ async function sleep(ms) {
 
 
 /** @type HTMLCanvasElement */
+// @ts-ignore
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
+/** @type HTMLButtonElement */
+// @ts-ignore
 const step_button = document.getElementById('step_button');
 
 document.addEventListener('DOMContentLoaded', () => {
