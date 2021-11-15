@@ -106,7 +106,7 @@ class Trapezoid {
         this.color = `hsla(${Math.random()*360}, 100%, 50%, 0.1)`;
     }
 
-    to_string() {
+    segments_key() {
         return 'top' + this.top.to_string() + 'bot' + this.bot.to_string();
     }
 
@@ -277,7 +277,7 @@ class Tree {
 
         /** @type {{ [key: string]: Node[] }} */
         this.seg_dict = {};
-        let sp = r_node.data.to_string();
+        let sp = r_node.data.segments_key();
         this.seg_dict[sp] = [r_node];
     };
 
@@ -298,7 +298,7 @@ class Tree {
         trapsList.forEach(t => {
             let p = Array.from(t.parent);
             // find trapezoid in children list, remove it
-            let sp = t.data.to_string();
+            let sp = t.data.segments_key();
             const relArray = this.seg_dict[sp];
             const index = relArray.indexOf(t);
             if (index > -1) {
@@ -345,7 +345,7 @@ class Tree {
      * @param {Node} trapNode
      */
     checkForMerge(trapNode) {
-        let searchObj = trapNode.data.to_string();
+        let searchObj = trapNode.data.segments_key();
         if (this.seg_dict.hasOwnProperty(searchObj)) {
             const curTraps = this.seg_dict[searchObj];
             const adjTraps = curTraps.filter((val) => (val.data.xmin == trapNode.data.xmax || val.data.xmax == trapNode.data.xmin));
@@ -406,7 +406,7 @@ class Tree {
         let p = new Node(pt, nodeFunc, nodeTypes.X_NODE);
         let tNode = new Node(t1, null, nodeTypes.T_NODE);
         tNode = this.checkForMerge(tNode);
-        let searchObj = tNode.data.to_string();
+        let searchObj = tNode.data.segments_key();
         this.seg_dict[searchObj].push(tNode);
 
         let t_above;
@@ -426,10 +426,10 @@ class Tree {
         let tNode2 = new Node(t_above, null, nodeTypes.T_NODE);
         let tNode3 = new Node(t_below, null, nodeTypes.T_NODE);
         tNode2 = this.checkForMerge(tNode2);
-        searchObj = tNode2.data.to_string();
+        searchObj = tNode2.data.segments_key();
         this.seg_dict[searchObj].push(tNode2);
         tNode3 = this.checkForMerge(tNode3);
-        searchObj = tNode3.data.to_string();
+        searchObj = tNode3.data.segments_key();
         this.seg_dict[searchObj].push(tNode3);
         s.left = tNode2;
         s.right = tNode3;
@@ -461,11 +461,11 @@ class Tree {
 
         let tNode = new Node(t1, null, nodeTypes.T_NODE);
         tNode = this.checkForMerge(tNode);
-        let searchObj = tNode.data.to_string();
+        let searchObj = tNode.data.segments_key();
         this.seg_dict[searchObj].push(tNode);
         let tNode2 = new Node(t2, null, nodeTypes.T_NODE)
         tNode2 = this.checkForMerge(tNode2);
-        searchObj = tNode2.data.to_string();
+        searchObj = tNode2.data.segments_key();
         this.seg_dict[searchObj].push(tNode2);
 
         let p = new Node(seg.p1, nodeFunc, nodeTypes.X_NODE);
@@ -484,11 +484,11 @@ class Tree {
         let s = new Node(seg, (in_pt) => { return seg.compare(in_pt) > 0 }, nodeTypes.Y_NODE);
         let tNode3 = new Node(t_above, null, nodeTypes.T_NODE);
         tNode3 = this.checkForMerge(tNode3);
-        searchObj = tNode3.data.to_string();
+        searchObj = tNode3.data.segments_key();
         this.seg_dict[searchObj].push(tNode3);
         let tNode4 = new Node(t_below, null, nodeTypes.T_NODE);
         tNode4 = this.checkForMerge(tNode4);
-        searchObj = tNode4.data.to_string();
+        searchObj = tNode4.data.segments_key();
         this.seg_dict[searchObj].push(tNode4);
         s.left = tNode3;
         s.right = tNode4;
@@ -516,11 +516,11 @@ class Tree {
         let s = new Node(seg, (in_pt) => { return seg.compare(in_pt) > 0 }, nodeTypes.Y_NODE);
         let tNode2 = new Node(t_above, null, nodeTypes.T_NODE);
         tNode2 = this.checkForMerge(tNode2);
-        let searchObj = tNode2.data.to_string();
+        let searchObj = tNode2.data.segments_key();
         this.seg_dict[searchObj].push(tNode2);
         let tNode3 = new Node(t_below, null, nodeTypes.T_NODE);
         tNode3 = this.checkForMerge(tNode3);
-        searchObj = tNode3.data.to_string();
+        searchObj = tNode3.data.segments_key();
         this.seg_dict[searchObj].push(tNode3);
         s.left = tNode2;
         s.right = tNode3;
