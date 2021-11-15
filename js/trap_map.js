@@ -351,13 +351,13 @@ class Tree {
             const adjTraps = curTraps.filter((val) => (val.data.xmin == trapNode.data.xmax || val.data.xmax == trapNode.data.xmin));
             if (adjTraps.length < 1) {
                 // no adjacent trapezoids to merge
-                this.seg_dict[searchObj].push(trapNode);
+                // this.seg_dict[searchObj].push(trapNode);
                 return trapNode;
             } else {
                 const remTraps = curTraps.filter(val => (val.data.xmin != trapNode.data.xmax && val.data.xmax != trapNode.data.xmin));
                 this.seg_dict[searchObj] = remTraps;
-                let xmin = Number.MAX_VALUE;
-                let xmax = Number.MIN_VALUE;
+                let xmin = trapNode.data.xmin;
+                let xmax = trapNode.data.xmax;
                 for (let index = 0; index < adjTraps.length; index++) {
                     const zoid = adjTraps[index];
                     if (zoid.data.xmin < xmin) xmin = zoid.data.xmin;
@@ -380,12 +380,13 @@ class Tree {
             }
         }
         else {
-            this.seg_dict[searchObj] = [trapNode];
+            this.seg_dict[searchObj] = [];
             return trapNode;
         }
     }
 
     /**
+     * One point in trapezoid
      * @param {Node} trapNode
      * @param {Point} pt
      * @param {Segment} seg
@@ -418,19 +419,24 @@ class Tree {
         }
         else {
             p.right = tNode;
-            t_above = new Trapezoid(trap.xmax, pt.x, trap.top, seg);
-            t_below = new Trapezoid(trap.xmax, pt.x, seg, trap.bot);
+            t_above = new Trapezoid(trap.xmin, pt.x, trap.top, seg);
+            t_below = new Trapezoid(trap.xmin, pt.x, seg, trap.bot);
         }
+
         tNode.parent.add(p);
+
         let s = new Node(seg, (in_pt) => { return seg.compare(in_pt) > 0 }, nodeTypes.Y_NODE);
+
         let tNode2 = new Node(t_above, null, nodeTypes.T_NODE);
-        let tNode3 = new Node(t_below, null, nodeTypes.T_NODE);
         tNode2 = this.checkForMerge(tNode2);
         searchObj = tNode2.data.segments_key();
         this.seg_dict[searchObj].push(tNode2);
+
+        let tNode3 = new Node(t_below, null, nodeTypes.T_NODE);
         tNode3 = this.checkForMerge(tNode3);
         searchObj = tNode3.data.segments_key();
         this.seg_dict[searchObj].push(tNode3);
+
         s.left = tNode2;
         s.right = tNode3;
         tNode2.parent.add(s);
@@ -448,6 +454,7 @@ class Tree {
     }
 
     /**
+     * Both points in trapezoid
      * @param {Node} trapNode
      * @param {Segment} seg
      */
@@ -504,6 +511,7 @@ class Tree {
     }
 
     /**
+     * No points in trapezoid; segment just crosses
      * @param {Node} trapNode
      * @param {Segment} seg
      */
