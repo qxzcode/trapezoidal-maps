@@ -84,10 +84,14 @@ class Segment {
     }
 }
 
-class SegPair {
-    constructor(seg1, seg2) {
-        this.top = seg1;
-        this.bot = seg2;
+class PointInfo {
+    /**
+     * @param {Point} pt the point in question
+     * @param {string} label which side it's on (P or Q)
+     */
+    constructor(pt, label) {
+        this.pt = pt;
+        this.label = label;
     }
 }
 
@@ -274,6 +278,11 @@ class Tree {
         this.x_count = 0;
         this.y_count = 0;
         this.t_count = 1;
+        this.seg_set = new Set();
+        this.point_set = new Set();
+        this.trap_set = new Set();
+
+        this.trap_set.add(r_node.data);
 
         /** @type {{ [key: string]: Node[] }} */
         this.seg_dict = {};
@@ -292,11 +301,14 @@ class Tree {
     insertSeg(segment, tmap) {
         // takes in a segment and a trapezoidal map
         // inserts the segment into the map
-
+        this.seg_set.add(segment);
+        this.point_set.add(new PointInfo(segment.p1,'P'))
+        this.point_set.add(new PointInfo(segment.p2,'Q'));
         let trapsList = this.findTrapsCrossed(segment, tmap)
         // for each trapezoid, we can assume that the segment passes through it, so we only need to check endpoints
         trapsList.forEach(t => {
             let p = Array.from(t.parent);
+            this.trap_set.delete(t.data);
             // find trapezoid in children list, remove it
             let sp = t.data.segments_key();
             const relArray = this.seg_dict[sp];
@@ -340,6 +352,97 @@ class Tree {
         });
     }
 
+    genTable(){
+        const pointArray = Array.from(this.point_set);
+        const segArray = Array.from(this.seg_set);
+        const trapArray = Array.from(this.trap_set);
+        let nThings = pointArray.length + segArray.length + trapArray.length;
+        let adjTable = new Array(nThings).fill(0).map( () => new Array(nThings).fill(0));
+
+        let nodesToTraverse = [this.root];
+        let index = 0;
+        while(nodesToTraverse.length > 0) {
+            let currentNode = nodesToTraverse.pop();
+            if(currentNode.hasChildren()) {
+                nodesToTraverse.push(currentNode.left);
+                nodesToTraverse.push(currentNode.right);
+            }
+            if(currentNode.type == nodeTypes.T_NODE) {
+                //find index of trapezoid, mark its parents in table
+                index = trapArray.findIndex((element) => element.equals(currentNode.data));
+                if(index < 0) { return "ERROR FINDING TRAPEZOIDS"};
+                index += (pointArray.length + segArray.length);
+                if(currentNode.parent.size > 0) {
+                    currentNode.parent.forEach(p => {
+                        let index2 = 0;
+                        if(p.type == nodeTypes.T_NODE) {
+                            //find index of trapezoid, mark its parents in table
+                            index2 = trapArray.findIndex((element) => element.equals(p.data));
+                            index2 += (pointArray.length + segArray.length);
+                        } else if(p.type == nodeTypes.Y_NODE) {
+                            // find index of segment, mark its parent
+                            index2 = segArray.findIndex((element) => element.equals(p.data));
+                            index2 += pointArray.length;
+                        } else {
+                            let compPointIndex = (element) => element.pt.equals(p.data);
+                            index2 = pointArray.findIndex(compPointIndex);
+                        }
+                        adjTable[index][index2] = 1;
+                    });
+                }
+            } else if(currentNode.type == nodeTypes.Y_NODE) {
+                // find index of segment, mark its parent
+                index = segArray.findIndex((element) => element.equals(currentNode.data));
+                if(index < 0) { return "ERROR FINDING SEGMENTS"};
+                index += pointArray.length;
+                if(currentNode.parent.size > 0) {
+                    currentNode.parent.forEach(p => {
+                        let index2 = 0;
+                        if(p.type == nodeTypes.T_NODE) {
+                            //find index of trapezoid, mark its parents in table
+                            index2 = trapArray.findIndex((element) => element.equals(p.data));
+                            index2 += (pointArray.length + segArray.length);
+                        } else if(p.type == nodeTypes.Y_NODE) {
+                            // find index of segment, mark its parent
+                            index2 = segArray.findIndex((element) => element.equals(p.data));
+                            index2 += pointArray.length;
+                        } else {
+                            let compPointIndex = (element) => element.pt.equals(p.data);
+                            index2 = pointArray.findIndex(compPointIndex);
+                        }
+                        adjTable[index][index2] = 1;
+                    });
+                }
+            } else {
+                // x_node
+                // find PointIndex in point list, mark its parents
+                let compPointIndex = (element) => element.pt.equals(currentNode.data);
+                index = pointArray.findIndex(compPointIndex);
+                if(index < 0) { return "ERROR FINDING POINTS"};
+                if(currentNode.parent.size > 0) {
+                    currentNode.parent.forEach(p => {
+                        let index2 = 0;
+                        if(p.type == nodeTypes.T_NODE) {
+                            //find index of trapezoid, mark its parents in table
+                            index2 = trapArray.findIndex((element) => element.equals(p.data));
+                            index2 += (pointArray.length + segArray.length);
+                        } else if(p.type == nodeTypes.Y_NODE) {
+                            // find index of segment, mark its parent
+                            index2 = segArray.findIndex((element) => element.equals(p.data));
+                            index2 += pointArray.length;
+                        } else {
+                            let compPointIndex = (element) => element.pt.equals(p.data);
+                            index2 = pointArray.findIndex(compPointIndex);
+                        }
+                        adjTable[index][index2] = 1;
+                    });
+                }
+            }
+        }
+
+        return adjTable;
+    }
+
     /**
      * @param {Node} trapNode
      */
@@ -360,6 +463,7 @@ class Tree {
                 let xmax = trapNode.data.xmax;
                 for (let index = 0; index < adjTraps.length; index++) {
                     const zoid = adjTraps[index];
+                    this.trap_set.delete(zoid.data);
                     if (zoid.data.xmin < xmin) xmin = zoid.data.xmin;
                     if (zoid.data.xmax > xmax) xmax = zoid.data.xmax;
                 }
@@ -409,6 +513,7 @@ class Tree {
         tNode = this.checkForMerge(tNode);
         let searchObj = tNode.data.segments_key();
         this.seg_dict[searchObj].push(tNode);
+        this.trap_set.add(tNode.data);
 
         let t_above;
         let t_below;
@@ -431,11 +536,13 @@ class Tree {
         tNode2 = this.checkForMerge(tNode2);
         searchObj = tNode2.data.segments_key();
         this.seg_dict[searchObj].push(tNode2);
+        this.trap_set.add(tNode2.data);
 
         let tNode3 = new Node(t_below, null, nodeTypes.T_NODE);
         tNode3 = this.checkForMerge(tNode3);
         searchObj = tNode3.data.segments_key();
         this.seg_dict[searchObj].push(tNode3);
+        this.trap_set.add(tNode3.data);
 
         s.left = tNode2;
         s.right = tNode3;
@@ -470,10 +577,13 @@ class Tree {
         tNode = this.checkForMerge(tNode);
         let searchObj = tNode.data.segments_key();
         this.seg_dict[searchObj].push(tNode);
+        this.trap_set.add(tNode.data);
+
         let tNode2 = new Node(t2, null, nodeTypes.T_NODE)
         tNode2 = this.checkForMerge(tNode2);
         searchObj = tNode2.data.segments_key();
         this.seg_dict[searchObj].push(tNode2);
+        this.trap_set.add(tNode2.data);
 
         let p = new Node(seg.p1, nodeFunc, nodeTypes.X_NODE);
         let q = new Node(seg.p2, nodeFunc2, nodeTypes.X_NODE);
@@ -493,10 +603,14 @@ class Tree {
         tNode3 = this.checkForMerge(tNode3);
         searchObj = tNode3.data.segments_key();
         this.seg_dict[searchObj].push(tNode3);
+        this.trap_set.add(tNode3.data);
+
         let tNode4 = new Node(t_below, null, nodeTypes.T_NODE);
         tNode4 = this.checkForMerge(tNode4);
         searchObj = tNode4.data.segments_key();
         this.seg_dict[searchObj].push(tNode4);
+        this.trap_set.add(tNode4.data);
+
         s.left = tNode3;
         s.right = tNode4;
         tNode3.parent.add(s);
@@ -526,10 +640,14 @@ class Tree {
         tNode2 = this.checkForMerge(tNode2);
         let searchObj = tNode2.data.segments_key();
         this.seg_dict[searchObj].push(tNode2);
+        this.trap_set.add(tNode2.data);
+
         let tNode3 = new Node(t_below, null, nodeTypes.T_NODE);
         tNode3 = this.checkForMerge(tNode3);
         searchObj = tNode3.data.segments_key();
         this.seg_dict[searchObj].push(tNode3);
+        this.trap_set.add(tNode3.data);
+
         s.left = tNode2;
         s.right = tNode3;
         tNode2.parent.add(s);

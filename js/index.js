@@ -149,6 +149,10 @@ document.addEventListener('DOMContentLoaded', () => {
     step_button.addEventListener('click', start);
 });
 
+/** @type HTMLTableElement */
+// @ts-ignore
+let adjMat = document.getElementById('adjMat');
+
 
 /**
  * @param {Visualization} vis
@@ -158,13 +162,20 @@ async function algorithm(vis, segments) {
     const data = INPUT_FILES['qt2393'];
     let trapMap = new TrapezoidalMap(new Point(data.x_min, data.y_min), new Point(data.x_max, data.y_max));
     vis.trap_map = trapMap;
+    
 
     for (const segment of segments) {
         // do some algorithm work, e.g. add the segment to the trapezoidal map
         //...
         trapMap.insert(segment);
 
-        console.log("t_count:", trapMap.root.t_count);
+        console.log("x_count: ", trapMap.root.x_count);
+        console.log("y_count: ", trapMap.root.y_count);
+        console.log("t_count: ", trapMap.root.t_count);
+
+        console.log("n_traps in set: ", trapMap.root.trap_set.size);
+        console.log("n_segs in set: ", trapMap.root.seg_set.size);
+        console.log("n_points in set: ", trapMap.root.point_set.size);
 
         // update the visualization and pause
         vis.segments.push(segment);
@@ -172,6 +183,74 @@ async function algorithm(vis, segments) {
         await vis.draw_and_pause();
     }
 
+    let titleRow = adjMat.insertRow();
+    titleRow.insertCell().innerHTML = '    ';
+    const trapArray = Array.from(trapMap.root.trap_set);
+    const segArray = Array.from(trapMap.root.seg_set);
+    const pointArray = Array.from(trapMap.root.point_set);
+    let nThings = trapArray.length + segArray.length + pointArray.length;
+    let adjTable = trapMap.root.genTable();
+    let nP = 0;
+    let nQ = 0;
+    for (let index = 0; index < pointArray.length; index++) {
+        const pt = pointArray[index];
+        if(pt.label == 'P') {
+            titleRow.insertCell().innerHTML = pt.label+nP;
+            nP++;
+        }else {
+            titleRow.insertCell().innerHTML = pt.label+nQ;
+            nQ++;
+        }
+    }
+    for (let index = 0; index < segArray.length; index++) {
+        const seg = segArray[index];
+        titleRow.insertCell().innerHTML = 'S'+index;
+    }
+    for (let index = 0; index < trapArray.length; index++) {
+        const trap = trapMap[index];
+        titleRow.insertCell().innerHTML = 'T'+index;
+    }
+    nP = 0;
+    nQ = 0;
+    for (let index = 0; index < pointArray.length; index++) {
+        const pt = pointArray[index];
+        let nRow = adjMat.insertRow();
+        if(pt.label == 'P') {
+            nRow.insertCell().innerHTML = pt.label+nP;
+            nP++;
+        }else {
+            nRow.insertCell().innerHTML = pt.label+nQ;
+            nQ++;
+        }
+        for(let ind2 = 0; ind2 < nThings; ind2++) {
+            nRow.insertCell();
+        }
+    }
+    for (let index = 0; index < segArray.length; index++) {
+        const seg = segArray[index];
+        let nRow = adjMat.insertRow();
+        nRow.insertCell().innerHTML = 'S'+index;
+        for(let ind2 = 0; ind2 < nThings; ind2++) {
+            nRow.insertCell();
+        }
+    }
+    for (let index = 0; index < trapArray.length; index++) {
+        const trap = trapMap[index];
+        let nRow = adjMat.insertRow();
+        nRow.insertCell().innerHTML = 'T'+index;
+        for(let ind2 = 0; ind2 < nThings; ind2++) {
+            nRow.insertCell();
+        }
+    }
+
+    for(let i = 0; i < adjTable.length;i++) {
+        for(let j = 0; j < adjTable[i].length;j++) {
+            adjMat.rows[i+1].cells[j+1].innerHTML = adjTable[i][j];
+            if(adjTable[i][j] > 0) {
+                adjMat.rows[i+1].cells[j+1].style.backgroundColor = "LightCoral";
+            }
+        }
+    }
     // mark the visualization as finished
     vis.highlighted_segment = null;
     vis.finished();
