@@ -328,17 +328,16 @@ class Tree {
             if (!(p.length > 0)) {
                 this.root = nroot;
             } else {
-                if (isLeft) {
-                    p[0].left = nroot;
-                }
-                else {
-                    p[0].right = nroot;
-                }
-                nroot.parent.add(p[0]);
+                p.forEach(parent => {
+                    if(t.equals(parent.left)) {
+                        parent.left = nroot;
+                    } else {
+                        parent.right = nroot;
+                    }
+                    nroot.parent.add(parent);
+                });
             }
         });
-
-        this.mergeTraps();
     }
 
     /**
@@ -355,6 +354,7 @@ class Tree {
                 return trapNode;
             } else {
                 const remTraps = curTraps.filter(val => (val.data.xmin != trapNode.data.xmax && val.data.xmax != trapNode.data.xmin));
+                this.t_count -= adjTraps.length;
                 this.seg_dict[searchObj] = remTraps;
                 let xmin = trapNode.data.xmin;
                 let xmax = trapNode.data.xmax;
@@ -541,10 +541,6 @@ class Tree {
         return s;
     }
 
-    mergeTraps() {
-
-    }
-
     /**
      * Takes in a segment and trapezoidal map.
      * Traverses the map to find each trapezoid crossed by the segment.
@@ -614,7 +610,10 @@ class Tree {
         while (xNodesList.length > 0) {
             const x_node = xNodesList.pop();
             x_nodes_to_check.delete(x_node);
-            currentNode = this.root;
+            let search_point = new Point(x_node.data.x,segment.getYpos(x_node.data.x));
+            currentNode = x_node;
+            const n = currentNode.navigate(search_point);
+            currentNode = n ? currentNode.left : currentNode.right;
             while (currentNode.hasChildren()) {
                 if (currentNode.type == nodeTypes.X_NODE) {
                     const nav1 = currentNode.navigate(segment.p1);
@@ -623,12 +622,12 @@ class Tree {
                         console.log("ILLEGAL NAVIGATION");
                         return;
                     }
-                    if (nav1 != nav2 && x_nodes_to_check.has(currentNode)) {
+                    if (nav1 != nav2 && !x_nodes_to_check.has(currentNode)) {
                         x_nodes_to_check.add(currentNode);
                     }
                     // last_point = currentNode.point
                 }
-                const n = currentNode.navigate(x_node.data);
+                const n = currentNode.navigate(search_point);
                 if (n) {
                     currentNode = currentNode.left;
                 }
