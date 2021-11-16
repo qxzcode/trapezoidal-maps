@@ -296,8 +296,11 @@ class Tree {
         this.x_count = 0;
         this.y_count = 0;
         this.t_count = 1;
+        /** @type Set<Segment> */
         this.seg_set = new Set();
+        /** @type Set<PointInfo> */
         this.point_set = new Set();
+        /** @type Set<Trapezoid> */
         this.trap_set = new Set();
 
         this.trap_set.add(r_node.data);
@@ -394,92 +397,50 @@ class Tree {
         return nodeName;
     }
 
-    genTable(){
+    genTable() {
         const pointArray = Array.from(this.point_set);
         const segArray = Array.from(this.seg_set);
         const trapArray = Array.from(this.trap_set);
-        let nThings = pointArray.length + segArray.length + trapArray.length;
-        let adjTable = new Array(nThings).fill(0).map( () => new Array(nThings).fill(0));
+        const nThings = pointArray.length + segArray.length + trapArray.length;
+        /** @type number[][] */
+        let adjTable = new Array(nThings).fill(null).map(() => new Array(nThings).fill(0));
+
+        /** @param {Node} node */
+        function getIndex(node) {
+            let index;
+            if (node.type === nodeTypes.T_NODE) {
+                // find index of trapezoid
+                index = trapArray.findIndex(trap => trap.equals(node.data));
+                if (index < 0) throw "ERROR FINDING TRAPEZOIDS";
+                index += pointArray.length + segArray.length;
+            } else if (node.type === nodeTypes.Y_NODE) {
+                // find index of segment
+                index = segArray.findIndex(seg => seg.equals(node.data));
+                if (index < 0) throw "ERROR FINDING SEGMENTS";
+                index += pointArray.length;
+            } else { // X_NODE
+                // find index in PointInfo list
+                index = pointArray.findIndex(pinfo => pinfo.pt.equals(node.data));
+                if (index < 0) throw "ERROR FINDING POINTS";
+            }
+            return index;
+        }
 
         let nodesToTraverse = [this.root];
-        let index = 0;
-        while(nodesToTraverse.length > 0) {
-            let currentNode = nodesToTraverse.pop();
-            if(currentNode.hasChildren()) {
+        while (nodesToTraverse.length > 0) {
+            // get the next node and queue its children
+            const currentNode = nodesToTraverse.pop();
+            if (currentNode.hasChildren()) {
                 nodesToTraverse.push(currentNode.left);
                 nodesToTraverse.push(currentNode.right);
             }
-            if(currentNode.type == nodeTypes.T_NODE) {
-                //find index of trapezoid, mark its parents in table
-                index = trapArray.findIndex((element) => element.equals(currentNode.data));
-                if(index < 0) { return "ERROR FINDING TRAPEZOIDS"};
-                index += (pointArray.length + segArray.length);
-                if(currentNode.parent.size > 0) {
-                    currentNode.parent.forEach(p => {
-                        let index2 = 0;
-                        if(p.type == nodeTypes.T_NODE) {
-                            //find index of trapezoid, mark its parents in table
-                            index2 = trapArray.findIndex((element) => element.equals(p.data));
-                            index2 += (pointArray.length + segArray.length);
-                        } else if(p.type == nodeTypes.Y_NODE) {
-                            // find index of segment, mark its parent
-                            index2 = segArray.findIndex((element) => element.equals(p.data));
-                            index2 += pointArray.length;
-                        } else {
-                            let compPointIndex = (element) => element.pt.equals(p.data);
-                            index2 = pointArray.findIndex(compPointIndex);
-                        }
-                        adjTable[index][index2] = 1;
-                    });
-                }
-            } else if(currentNode.type == nodeTypes.Y_NODE) {
-                // find index of segment, mark its parent
-                index = segArray.findIndex((element) => element.equals(currentNode.data));
-                if(index < 0) { return "ERROR FINDING SEGMENTS"};
-                index += pointArray.length;
-                if(currentNode.parent.size > 0) {
-                    currentNode.parent.forEach(p => {
-                        let index2 = 0;
-                        if(p.type == nodeTypes.T_NODE) {
-                            //find index of trapezoid, mark its parents in table
-                            index2 = trapArray.findIndex((element) => element.equals(p.data));
-                            index2 += (pointArray.length + segArray.length);
-                        } else if(p.type == nodeTypes.Y_NODE) {
-                            // find index of segment, mark its parent
-                            index2 = segArray.findIndex((element) => element.equals(p.data));
-                            index2 += pointArray.length;
-                        } else {
-                            let compPointIndex = (element) => element.pt.equals(p.data);
-                            index2 = pointArray.findIndex(compPointIndex);
-                        }
-                        adjTable[index][index2] = 1;
-                    });
-                }
-            } else {
-                // x_node
-                // find PointIndex in point list, mark its parents
-                let compPointIndex = (element) => element.pt.equals(currentNode.data);
-                index = pointArray.findIndex(compPointIndex);
-                if(index < 0) { return "ERROR FINDING POINTS"};
-                if(currentNode.parent.size > 0) {
-                    currentNode.parent.forEach(p => {
-                        let index2 = 0;
-                        if(p.type == nodeTypes.T_NODE) {
-                            //find index of trapezoid, mark its parents in table
-                            index2 = trapArray.findIndex((element) => element.equals(p.data));
-                            index2 += (pointArray.length + segArray.length);
-                        } else if(p.type == nodeTypes.Y_NODE) {
-                            // find index of segment, mark its parent
-                            index2 = segArray.findIndex((element) => element.equals(p.data));
-                            index2 += pointArray.length;
-                        } else {
-                            let compPointIndex = (element) => element.pt.equals(p.data);
-                            index2 = pointArray.findIndex(compPointIndex);
-                        }
-                        adjTable[index][index2] = 1;
-                    });
-                }
-            }
+
+            // mark the current node's parents
+            const childIndex = getIndex(currentNode);
+            currentNode.parent.forEach(parent => {
+                const parentIndex = getIndex(parent);
+                adjTable[childIndex][parentIndex] = 1;
+            });
         }
 
         return adjTable;
