@@ -107,7 +107,7 @@ class Trapezoid {
         this.xmax = x_max;
         this.top = top_seg;
         this.bot = bot_seg;
-        this.color = `hsla(${Math.random()*360}, 100%, 50%, 0.1)`;
+        this.color = `hsla(${Math.random() * 360}, 100%, 50%, 0.1)`;
     }
 
     segments_key() {
@@ -214,15 +214,15 @@ class TrapezoidalMap {
      * @param {number} x 
      * @param {number} y 
      */
-    query(x,y) {
+    query(x, y) {
         let currentNode = this.root.root;
-        let queryPoint = new Point(x,y);
+        let queryPoint = new Point(x, y);
 
-        while(currentNode.hasChildren()){
+        while (currentNode.hasChildren()) {
             let dir = currentNode.navigate(queryPoint);
             let nodeName = this.root.getNodeName(currentNode);
             console.log(nodeName);
-            currentNode = dir ? currentNode.left: currentNode.right;
+            currentNode = dir ? currentNode.left : currentNode.right;
         }
         return currentNode.data;
     }
@@ -323,8 +323,8 @@ class Tree {
         // takes in a segment and a trapezoidal map
         // inserts the segment into the map
         this.seg_set.add(segment);
-        this.point_set.add(new PointInfo(segment.p1,'P'))
-        this.point_set.add(new PointInfo(segment.p2,'Q'));
+        this.point_set.add(new PointInfo(segment.p1, 'P'))
+        this.point_set.add(new PointInfo(segment.p2, 'Q'));
         let trapsList = this.findTrapsCrossed(segment, tmap)
         // for each trapezoid, we can assume that the segment passes through it, so we only need to check endpoints
         trapsList.forEach(t => {
@@ -362,7 +362,7 @@ class Tree {
                 this.root = nroot;
             } else {
                 p.forEach(parent => {
-                    if(t.equals(parent.left)) {
+                    if (t.equals(parent.left)) {
                         parent.left = nroot;
                     } else {
                         parent.right = nroot;
@@ -373,19 +373,20 @@ class Tree {
         });
     }
 
-    getNodeName(node){
+    /**
+     * @param {Node} node
+     */
+    getNodeName(node) {
         const pointArray = Array.from(this.point_set);
         const segArray = Array.from(this.seg_set);
         const trapArray = Array.from(this.trap_set);
         let index = 0;
         let nodeName = 'T'
-        if(node.type == nodeTypes.T_NODE) {
-            
+        if (node.type === nodeTypes.T_NODE) {
             index = trapArray.findIndex((element) => element.equals(node.data));
             index += (pointArray.length + segArray.length);
             nodeName = 'T' + index;
-        } else if(node.type == nodeTypes.Y_NODE) {
-
+        } else if (node.type === nodeTypes.Y_NODE) {
             index = segArray.findIndex((element) => element.equals(node.data));
             index += pointArray.length;
             nodeName = 'S' + index;
@@ -731,7 +732,7 @@ class Tree {
         while (xNodesList.length > 0) {
             const x_node = xNodesList.pop();
             x_nodes_to_check.delete(x_node);
-            let search_point = new Point(x_node.data.x,segment.getYpos(x_node.data.x));
+            let search_point = new Point(x_node.data.x, segment.getYpos(x_node.data.x));
             currentNode = x_node;
             const n = currentNode.navigate(search_point);
             currentNode = n ? currentNode.left : currentNode.right;
