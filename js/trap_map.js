@@ -220,6 +220,8 @@ class TrapezoidalMap {
 
         while(currentNode.hasChildren()){
             let dir = currentNode.navigate(queryPoint);
+            let nodeName = this.root.getNodeName(currentNode);
+            console.log(nodeName);
             currentNode = dir ? currentNode.left: currentNode.right;
         }
         return currentNode.data;
@@ -366,6 +368,30 @@ class Tree {
                 });
             }
         });
+    }
+
+    getNodeName(node){
+        const pointArray = Array.from(this.point_set);
+        const segArray = Array.from(this.seg_set);
+        const trapArray = Array.from(this.trap_set);
+        let index = 0;
+        let nodeName = 'T'
+        if(node.type == nodeTypes.T_NODE) {
+            
+            index = trapArray.findIndex((element) => element.equals(node.data));
+            index += (pointArray.length + segArray.length);
+            nodeName = 'T' + index;
+        } else if(node.type == nodeTypes.Y_NODE) {
+
+            index = segArray.findIndex((element) => element.equals(node.data));
+            index += pointArray.length;
+            nodeName = 'S' + index;
+        } else {
+            let compPointIndex = (element) => element.pt.equals(node.data);
+            index = pointArray.findIndex(compPointIndex);
+            nodeName = pointArray[index].label + index;
+        }
+        return nodeName;
     }
 
     genTable(){
