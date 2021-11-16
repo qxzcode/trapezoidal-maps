@@ -208,6 +208,22 @@ class TrapezoidalMap {
         this.root.insertSeg(segment, this.root);
         //...
     }
+
+    /**
+     * 
+     * @param {number} x 
+     * @param {number} y 
+     */
+    query(x,y) {
+        let currentNode = this.root.root;
+        let queryPoint = new Point(x,y);
+
+        while(currentNode.hasChildren()){
+            let dir = currentNode.navigate(queryPoint);
+            currentNode = dir ? currentNode.left: currentNode.right;
+        }
+        return currentNode.data;
+    }
 }
 
 
