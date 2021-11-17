@@ -15,8 +15,13 @@ class Visualization {
         this.segments = [];
         /** @type Segment= */
         this.highlighted_segment = null;
+
         /** @type TrapezoidalMap= */
         this.trap_map = null;
+        /** @type Trapezoid= */
+        this.highlighted_trap = null;
+        /** @type Point= */
+        this.query_point = null;
     }
 
     draw() {
@@ -53,6 +58,14 @@ class Visualization {
             const color = this.highlighted_segment === segment ? 'blue' : 'gray';
             segment.draw(ctx, color);
         }
+
+        // draw the query point
+        if (this.query_point !== null) {
+            ctx.fillStyle = "#ff2626";
+            ctx.beginPath();
+            ctx.arc(this.query_point.x, this.query_point.y, 0.9, 0, Math.PI * 2);
+            ctx.fill();
+        }
     }
 
     /**
@@ -61,7 +74,11 @@ class Visualization {
      */
     _draw_trapezoid(trap) {
         //ctx.fillStyle = trap.color;
-        ctx.fillStyle = 'hsla(0, 100%, 50%, 0.1)';
+        if (trap === this.highlighted_trap) {
+            ctx.fillStyle = 'hsla(0, 100%, 50%, 0.25)';
+        } else {
+            ctx.fillStyle = 'hsla(0, 100%, 50%, 0.1)';
+        }
         ctx.strokeStyle = 'black';
         ctx.setLineDash([5 / this.scale, 5 / this.scale]);
 
@@ -162,7 +179,7 @@ async function algorithm(vis, segments) {
     const data = INPUT_FILES['qt2393'];
     let trapMap = new TrapezoidalMap(new Point(data.x_min, data.y_min), new Point(data.x_max, data.y_max));
     vis.trap_map = trapMap;
-    
+
 
     for (const segment of segments) {
         // do some algorithm work, e.g. add the segment to the trapezoidal map
@@ -245,7 +262,7 @@ async function algorithm(vis, segments) {
 
     for(let i = 0; i < adjTable.length;i++) {
         for(let j = 0; j < adjTable[i].length;j++) {
-            adjMat.rows[i+1].cells[j+1].innerHTML = adjTable[i][j];
+            adjMat.rows[i+1].cells[j+1].innerHTML = String(adjTable[i][j]);
             if(adjTable[i][j] > 0) {
                 adjMat.rows[i+1].cells[j+1].style.backgroundColor = "LightCoral";
             }
@@ -254,4 +271,31 @@ async function algorithm(vis, segments) {
     // mark the visualization as finished
     vis.highlighted_segment = null;
     vis.finished();
+
+    await doPointPicking(vis, trapMap);
+}
+
+/**
+ * @param {Visualization} vis
+ * @param {TrapezoidalMap} trapMap
+ */
+async function doPointPicking(vis, trapMap) {
+    canvas.addEventListener('click', event => {
+        if (event.button === 0) {
+            let x = event.offsetX / vis.scale;
+            let y = (canvas.height - event.offsetY) / vis.scale;
+            canvasClicked(x, y);
+        }
+    });
+
+    /**
+     * @param {number} x
+     * @param {number} y
+     */
+    function canvasClicked(x, y) {
+        vis.query_point = new Point(x, y);
+        const trap = trapMap.query(x, y);
+        vis.highlighted_trap = trap;
+        vis.draw();
+    }
 }

@@ -213,6 +213,7 @@ class TrapezoidalMap {
      * 
      * @param {number} x 
      * @param {number} y 
+     * @returns {Trapezoid}
      */
     query(x, y) {
         let currentNode = this.root.root;
