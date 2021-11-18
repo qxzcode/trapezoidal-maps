@@ -170,6 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // @ts-ignore
 let adjMat = document.getElementById('adjMat');
 
+let queryButton = document.getElementById('queryButton');
 
 /**
  * @param {Visualization} vis
@@ -179,6 +180,11 @@ async function algorithm(vis, segments) {
     const data = INPUT_FILES['qt2393'];
     let trapMap = new TrapezoidalMap(new Point(data.x_min, data.y_min), new Point(data.x_max, data.y_max));
     vis.trap_map = trapMap;
+
+    let queryDiv = document.getElementById('queryDiv');
+    queryDiv.style.visibility = 'visible';
+    queryButton.addEventListener('click', (event) => {pointFromText(vis,trapMap)});
+
 
 
     for (const segment of segments) {
@@ -293,6 +299,22 @@ async function doPointPicking(vis, trapMap) {
      * @param {number} y
      */
     function canvasClicked(x, y) {
+        vis.query_point = new Point(x, y);
+        const trap = trapMap.query(x, y);
+        vis.highlighted_trap = trap;
+        vis.draw();
+    }
+}
+
+function pointFromText(vis, trapMap) {
+    let xIn = document.getElementById('xval');
+    let yIn = document.getElementById('yval');
+    textQuery(parseFloat(xIn.value), parseFloat(yIn.value));
+    /**
+     * @param {number} x
+     * @param {number} y
+     */
+     function textQuery(x,y) {
         vis.query_point = new Point(x, y);
         const trap = trapMap.query(x, y);
         vis.highlighted_trap = trap;

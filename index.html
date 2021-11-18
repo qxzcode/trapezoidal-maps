@@ -14,8 +14,15 @@
     </header>
 
     <main>
-        <canvas id="canvas"></canvas>
-        <button id="step_button">Start</button>
+        <canvas id="canvas"></canvas><br><br>
+        <button id="step_button">Start</button><br><br>
+        <div id="queryDiv">
+            <label for="xval">X position:</label>
+            <input type="number" id="xval" name="xval" min="0" max="100"><br><br>
+            <label for="yval">Y position:</label>
+            <input type="number" id="yval" name="yval" min="0" max="100"><br><br>
+            <input type="submit" value="Submit" id="queryButton">
+        </div>
         <table id="adjMat"></table>
     </main>
 

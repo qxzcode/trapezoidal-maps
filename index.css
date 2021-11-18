@@ -1,5 +1,6 @@
 canvas {
     border: 1px solid #d3d3d3;
+    align-content: center;
 }
 table {
     table-layout: fixed;
@@ -11,4 +12,11 @@ td {
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: center;
+}
+
+#queryDiv {
+    width:800px; 
+    margin:0 auto;
+    text-align: center;
+    visibility: hidden;
 }
