@@ -681,6 +681,13 @@ class Tree {
         // let last_point = null;
         while (currentNode.hasChildren()) {
             if (currentNode.type == nodeTypes.X_NODE) {
+                // interpolate a bit up the line if we have a shared point
+                if(currentNode.data.equals(segment.p1)) {
+                    let t = 0.999;
+                    let t_pt = new Point(segment.p1.x,segment.p1.y);
+                    t_pt.x = segment.p1.x * t + segment.p2.x * (1-t);
+                    segment.p1.x = t_pt.x;
+                }
                 const nav1 = currentNode.navigate(segment.p1);
                 const nav2 = currentNode.navigate(segment.p2);
                 if (nav1 == null || nav2 == null) {
@@ -705,6 +712,13 @@ class Tree {
         currentNode = this.root;
         while (currentNode.hasChildren()) {
             if (currentNode.type == nodeTypes.X_NODE) {
+                // interpolate a bit down the line if we have a shared point
+                if(currentNode.data.equals(segment.p2)) {
+                    let t = 0.999;
+                    let t_pt = new Point(segment.p2.x,segment.p2.y);
+                    t_pt.x = segment.p1.x * (1-t) + segment.p2.x * (t);
+                    segment.p2.x = t_pt.x;
+                }
                 const nav1 = currentNode.navigate(segment.p1);
                 const nav2 = currentNode.navigate(segment.p2);
                 if (nav1 == null || nav2 == null) {

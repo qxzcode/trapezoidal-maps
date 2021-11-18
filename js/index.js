@@ -147,6 +147,8 @@ for (const key in INPUT_FILES) {
     inputList.appendChild(opt);
 }
 
+const inputFilePath = document.getElementById('filePath');
+
 
 /** @type HTMLCanvasElement */
 // @ts-ignore
@@ -157,15 +159,16 @@ const ctx = canvas.getContext('2d');
 // @ts-ignore
 const step_button = document.getElementById('step_button');
 let id_str = 'qt2393';
+let loadedFromFile = false;
+let data = INPUT_FILES['qt2393'];
 
 document.addEventListener('DOMContentLoaded', () => {
     canvas.width = 800;
     canvas.height = 600;
 
-    const data = INPUT_FILES['qt2393'];
     // const segments = data.segments.map(s =>
     //     new Segment(new Point(s.x1, s.y1), new Point(s.x2, s.y2)));
-    const visualization = new Visualization(data);
+    let visualization = new Visualization(data);
     visualization.draw();
 
     function start() {
@@ -178,7 +181,30 @@ document.addEventListener('DOMContentLoaded', () => {
     step_button.addEventListener('click', start);
     loadButton.addEventListener('click', () => {
         id_str = inputList.value;
+        loadedFromFile = false;
     })
+    loadFileButton.addEventListener('click', function() {
+        let file = document.querySelector("#file-input").files[0];
+        // let reader = new FileReader();
+        // reader.addEventListener('load', function(e) {
+        //         let text = e.target.result;
+        //         allText = text;
+        // });
+        // reader.readAsText(file);
+        visualization = null;
+        loadFile(file).then(result => { 
+            data = result
+            visualization = new Visualization(data);
+            loadedFromFile = true;
+        });
+    });
+    // loadFileButton.addEventListener('click', () => {
+    //     let fNameStr = inputFilePath.value;
+    //     visualization = null;
+    //     data = loadFile(fNameStr);
+    //     visualization = new Visualization(data);
+    //     loadedFromFile = true;
+    // })
 });
 
 /** @type HTMLTableElement */
@@ -188,6 +214,9 @@ let adjMat = document.getElementById('adjMat');
 let queryButton = document.getElementById('queryButton');
 
 let loadButton = document.getElementById('load_button');
+let loadFileButton = document.getElementById('load_file_button');
+let allText = '';
+
 
 /**
  * @param {Visualization} vis
@@ -195,7 +224,9 @@ let loadButton = document.getElementById('load_button');
 //* @param {Segment[]} segments
 // async function algorithm(vis, segments) {
 async function algorithm(vis) {
-    let data = INPUT_FILES[id_str];
+    if(!loadedFromFile) {
+        data = INPUT_FILES[id_str]; 
+    }
     let segments = data.segments.map(s =>
         new Segment(new Point(s.x1, s.y1), new Point(s.x2, s.y2)));
     let trapMap = new TrapezoidalMap(new Point(data.x_min, data.y_min), new Point(data.x_max, data.y_max));
@@ -340,4 +371,48 @@ function pointFromText(vis, trapMap) {
         vis.highlighted_trap = trap;
         vis.draw();
     }
+}
+
+async function loadFile(file) {
+    // var file = '../InputFiles/tdl1818.txt';
+    // var rawFile = new XMLHttpRequest();
+    // var allText = 'ERROR';
+    // rawFile.open("GET", filename, false);
+    // rawFile.onreadystatechange = function ()
+    // {
+    //     if(rawFile.readyState === 4)
+    //     {
+    //         if(rawFile.status === 200 || rawFile.status == 0)
+    //         {
+    //             allText = rawFile.responseText;
+    //         }
+    //     }
+    // }
+    // rawFile.send(null);
+    allText = await file.text();
+
+    const lines = allText.split('\n');
+
+    let data = {};
+    let nlines = parseInt(lines[0]);
+
+    let bbox = lines[1].split(' ');
+    data.x_min = parseFloat(bbox[0]);
+    data.y_min = parseFloat(bbox[1]);
+    data.x_max = parseFloat(bbox[2]);
+    data.y_max = parseFloat(bbox[3]);
+
+    data.segments = [];
+
+    for (let index = 2; index < lines.length; index++) {
+        const element = lines[index];
+        let vals = element.split(' ');
+        if(vals.length > 3){
+            data.segments.push({x1: parseFloat(vals[0]), y1: parseFloat(vals[1]), x2: parseFloat(vals[2]), y2: parseFloat(vals[3])});
+        } else {
+            console.log('Reading a line without enough values for a segment');
+        }
+    }
+
+    return data;
 }
