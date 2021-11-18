@@ -137,6 +137,16 @@ async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+/** @type HTMLCanvasElement */
+// @ts-ignore
+const inputList = document.getElementById('inputs');
+for (const key in INPUT_FILES) {
+    let opt = document.createElement("option");
+    opt.value = key;
+    opt.innerHTML = key;
+    inputList.appendChild(opt);
+}
+
 
 /** @type HTMLCanvasElement */
 // @ts-ignore
@@ -146,14 +156,15 @@ const ctx = canvas.getContext('2d');
 /** @type HTMLButtonElement */
 // @ts-ignore
 const step_button = document.getElementById('step_button');
+let id_str = 'qt2393';
 
 document.addEventListener('DOMContentLoaded', () => {
     canvas.width = 800;
     canvas.height = 600;
 
     const data = INPUT_FILES['qt2393'];
-    const segments = data.segments.map(s =>
-        new Segment(new Point(s.x1, s.y1), new Point(s.x2, s.y2)));
+    // const segments = data.segments.map(s =>
+    //     new Segment(new Point(s.x1, s.y1), new Point(s.x2, s.y2)));
     const visualization = new Visualization(data);
     visualization.draw();
 
@@ -161,9 +172,13 @@ document.addEventListener('DOMContentLoaded', () => {
         step_button.removeEventListener('click', start);
         step_button.textContent = 'Step';
         visualization.start();
-        algorithm(visualization, segments);
+        // algorithm(visualization, segments);
+        algorithm(visualization);
     }
     step_button.addEventListener('click', start);
+    loadButton.addEventListener('click', () => {
+        id_str = inputList.value;
+    })
 });
 
 /** @type HTMLTableElement */
@@ -172,12 +187,17 @@ let adjMat = document.getElementById('adjMat');
 
 let queryButton = document.getElementById('queryButton');
 
+let loadButton = document.getElementById('load_button');
+
 /**
  * @param {Visualization} vis
- * @param {Segment[]} segments
  */
-async function algorithm(vis, segments) {
-    const data = INPUT_FILES['qt2393'];
+//* @param {Segment[]} segments
+// async function algorithm(vis, segments) {
+async function algorithm(vis) {
+    let data = INPUT_FILES[id_str];
+    let segments = data.segments.map(s =>
+        new Segment(new Point(s.x1, s.y1), new Point(s.x2, s.y2)));
     let trapMap = new TrapezoidalMap(new Point(data.x_min, data.y_min), new Point(data.x_max, data.y_max));
     vis.trap_map = trapMap;
 
