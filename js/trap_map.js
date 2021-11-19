@@ -385,16 +385,15 @@ class Tree {
         let nodeName = 'T'
         if (node.type === nodeTypes.T_NODE) {
             index = trapArray.findIndex((element) => element.equals(node.data));
-            index += (pointArray.length + segArray.length);
             nodeName = 'T' + index;
         } else if (node.type === nodeTypes.Y_NODE) {
             index = segArray.findIndex((element) => element.equals(node.data));
-            index += pointArray.length;
             nodeName = 'S' + index;
         } else {
             let compPointIndex = (element) => element.pt.equals(node.data);
             index = pointArray.findIndex(compPointIndex);
-            nodeName = pointArray[index].label + index;
+            let indNum = Math.floor(index/2);
+            nodeName = pointArray[index].label + indNum;
         }
         return nodeName;
     }
