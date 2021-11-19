@@ -726,7 +726,7 @@ class Tree {
                     console.log("ILLEGAL NAVIGATION");
                     return;
                 }
-                if (nav1 != nav2 && x_nodes_to_check.has(currentNode)) {
+                if (nav1 != nav2) {
                     x_nodes_to_check.add(currentNode);
                 }
                 // last_point = currentNode.point

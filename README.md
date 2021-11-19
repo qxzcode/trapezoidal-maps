@@ -19,12 +19,17 @@ LOAD:
 * To select one of the class files:
   * choose a student ID from the dropdown menu
   * Press the `Load` button.
+* To load a text file, in the same format as class files:
+  * `Choose File` to select your file from your explorer
+  * `Load from File` to get the file processed
+* Follow RUN instructions for next step
 
 RUN:
 * Press the `Start` button below the frame to insert a single segment.
 * `Step` until all segments are inserted.
 * When all segments are inserted, the button will become inactive, and the map will become interactively queryable
 * Additionally, the Adjacency matrix will be displayed at the bottom of the page.
+* To Query the map: look below!
 
 QUERY:
 * Once a segment is added, the map can be queried by entering a point's x and y values into the text boxes and selecting `Submit`
