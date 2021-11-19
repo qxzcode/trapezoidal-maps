@@ -225,6 +225,8 @@ class TrapezoidalMap {
             console.log(nodeName);
             currentNode = dir ? currentNode.left : currentNode.right;
         }
+        let nodeName = this.root.getNodeName(currentNode);
+        console.log(nodeName);
         return currentNode.data;
     }
 }
