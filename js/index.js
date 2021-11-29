@@ -8,7 +8,18 @@ class Visualization {
     constructor(data) {
         this.data = data;
         this._unpause_resolvers = [];
-        this.scale = 6;
+        this.x_offset = 0 - data.x_min;
+        this.y_offset = 0 - data.y_min;
+        this.width = data.x_max - data.x_min;
+        this.height = data.y_max - data.y_min;
+        this.aspect = this.height/this.width;
+        this.ratio_x = canvas.width/this.width;
+        this.ratio_y = canvas.height/this.height;
+        this.scale_x = 8;
+        this.scale_y = 6;
+        this.async = true;
+
+        canvas.height = canvas.width * this.aspect;
 
         // objects and state to be visualized
         /** @type Segment[] */
@@ -29,15 +40,16 @@ class Visualization {
         // TODO: have this adapt to the data and canvas size
         ctx.resetTransform();
         ctx.translate(0, canvas.height);
-        ctx.scale(this.scale, -this.scale);
+        ctx.scale(this.ratio_x, -this.ratio_y);
 
         // clear the canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, this.width, this.height);
 
         // draw the bounding box
         ctx.strokeStyle = 'black';
-        ctx.lineWidth = 2 / this.scale;
-        ctx.strokeRect(this.data.x_min, this.data.y_min, this.data.x_max - this.data.x_min, this.data.y_max - this.data.y_min);
+        ctx.lineWidth = 2 / this.ratio_x;
+        ctx.strokeRect((this.data.x_min + this.x_offset), (this.data.y_min + this.y_offset),
+                         (this.data.x_max + this.x_offset), (this.data.y_max + this.y_offset));
 
         // draw the trapezoidal map
         if (this.trap_map !== null) {
@@ -53,17 +65,17 @@ class Visualization {
 
         // draw the segments
         ctx.lineCap = 'round';
-        ctx.lineWidth = 5 / this.scale;
+        ctx.lineWidth = 5 / this.ratio_x;
         for (const segment of this.segments) {
-            const color = this.highlighted_segment === segment ? 'blue' : 'gray';
-            segment.draw(ctx, color);
+            const color = this.highlighted_segment === segment ? 'Chartreuse' : 'CadetBlue';
+            segment.draw(ctx, color, this.x_offset, this.y_offset);
         }
 
         // draw the query point
         if (this.query_point !== null) {
             ctx.fillStyle = "#ff2626";
             ctx.beginPath();
-            ctx.arc(this.query_point.x, this.query_point.y, 0.9, 0, Math.PI * 2);
+            ctx.arc(this.query_point.x + this.x_offset, this.query_point.y + this.y_offset, 0.008 * this.height, 0, Math.PI * 2);
             ctx.fill();
         }
     }
@@ -80,14 +92,14 @@ class Visualization {
             ctx.fillStyle = 'hsla(0, 100%, 50%, 0.1)';
         }
         ctx.strokeStyle = 'black';
-        ctx.setLineDash([5 / this.scale, 5 / this.scale]);
+        ctx.setLineDash([5 / this.ratio_x, 5 / this.ratio_y]);
 
         ctx.beginPath();
-        ctx.moveTo(trap.xmin, trap.top.getYpos(trap.xmin));
-        ctx.lineTo(trap.xmax, trap.top.getYpos(trap.xmax));
-        ctx.lineTo(trap.xmax, trap.bot.getYpos(trap.xmax));
+        ctx.moveTo(trap.xmin + this.x_offset, trap.top.getYpos(trap.xmin) + this.y_offset);
+        ctx.lineTo(trap.xmax + this.x_offset, trap.top.getYpos(trap.xmax) + this.y_offset);
+        ctx.lineTo(trap.xmax + this.x_offset, trap.bot.getYpos(trap.xmax) + this.y_offset);
         ctx.stroke();
-        ctx.lineTo(trap.xmin, trap.bot.getYpos(trap.xmin));
+        ctx.lineTo(trap.xmin + this.x_offset, trap.bot.getYpos(trap.xmin) + this.y_offset);
         ctx.fill();
     }
 
@@ -117,12 +129,18 @@ class Visualization {
             this._unpause_resolvers.forEach(resolve => resolve());
             this._unpause_resolvers = [];
         };
+        this.continuer = () => {
+            this.step_handler();
+            this.async = false;
+        }
         step_button.addEventListener('click', this.step_handler);
+        finish_button.addEventListener('click',this.continuer);
     }
 
     async draw_and_pause() {
         this.draw();
         return new Promise(resolve => this._unpause_resolvers.push(resolve));
+
     }
 
     finished() {
@@ -130,6 +148,8 @@ class Visualization {
         step_button.textContent = 'Done';
         step_button.disabled = true;
         step_button.removeEventListener('click', this.step_handler);
+        finish_button.removeEventListener('click',this.continuer);
+        finish_button.style.display = "none";
     }
 }
 
@@ -158,6 +178,10 @@ const ctx = canvas.getContext('2d');
 /** @type HTMLButtonElement */
 // @ts-ignore
 const step_button = document.getElementById('step_button');
+/** @type HTMLButtonElement */
+// @ts-ignore
+const finish_button = document.getElementById('finish_button');
+finish_button.style.display = "none";
 let id_str = 'qt2393';
 let loadedFromFile = false;
 let data = INPUT_FILES['qt2393'];
@@ -175,6 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
         step_button.removeEventListener('click', start);
         step_button.textContent = 'Step';
         visualization.start();
+        finish_button.style.display = "";
         // algorithm(visualization, segments);
         algorithm(visualization);
     }
@@ -192,10 +217,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // });
         // reader.readAsText(file);
         visualization = null;
+        step_button.disabled = true;
         loadFile(file).then(result => { 
             data = result
             visualization = new Visualization(data);
             loadedFromFile = true;
+            step_button.disabled = false;
         });
     });
     // loadFileButton.addEventListener('click', () => {
@@ -254,74 +281,82 @@ async function algorithm(vis) {
         // update the visualization and pause
         vis.segments.push(segment);
         vis.highlighted_segment = segment;
-        await vis.draw_and_pause();
-    }
-
-    let titleRow = adjMat.insertRow();
-    titleRow.insertCell().innerHTML = '    ';
-    const trapArray = Array.from(trapMap.root.trap_set);
-    const segArray = Array.from(trapMap.root.seg_set);
-    const pointArray = Array.from(trapMap.root.point_set);
-    let nThings = trapArray.length + segArray.length + pointArray.length;
-    let adjTable = trapMap.root.genTable();
-    let nP = 0;
-    let nQ = 0;
-    for (let index = 0; index < pointArray.length; index++) {
-        const pt = pointArray[index];
-        if(pt.label == 'P') {
-            titleRow.insertCell().innerHTML = pt.label+nP;
-            nP++;
+        if(vis.async){
+            await vis.draw_and_pause();
         }else {
-            titleRow.insertCell().innerHTML = pt.label+nQ;
-            nQ++;
+            await sleep(5).then(resolve => { vis.draw(); });
+            //vis.draw();
         }
     }
-    for (let index = 0; index < segArray.length; index++) {
-        const seg = segArray[index];
-        titleRow.insertCell().innerHTML = 'S'+index;
-    }
-    for (let index = 0; index < trapArray.length; index++) {
-        const trap = trapMap[index];
-        titleRow.insertCell().innerHTML = 'T'+index;
-    }
-    nP = 0;
-    nQ = 0;
-    for (let index = 0; index < pointArray.length; index++) {
-        const pt = pointArray[index];
-        let nRow = adjMat.insertRow();
-        if(pt.label == 'P') {
-            nRow.insertCell().innerHTML = pt.label+nP;
-            nP++;
-        }else {
-            nRow.insertCell().innerHTML = pt.label+nQ;
-            nQ++;
-        }
-        for(let ind2 = 0; ind2 < nThings; ind2++) {
-            nRow.insertCell();
-        }
-    }
-    for (let index = 0; index < segArray.length; index++) {
-        const seg = segArray[index];
-        let nRow = adjMat.insertRow();
-        nRow.insertCell().innerHTML = 'S'+index;
-        for(let ind2 = 0; ind2 < nThings; ind2++) {
-            nRow.insertCell();
-        }
-    }
-    for (let index = 0; index < trapArray.length; index++) {
-        const trap = trapMap[index];
-        let nRow = adjMat.insertRow();
-        nRow.insertCell().innerHTML = 'T'+index;
-        for(let ind2 = 0; ind2 < nThings; ind2++) {
-            nRow.insertCell();
-        }
-    }
+    vis.draw()
 
-    for(let i = 0; i < adjTable.length;i++) {
-        for(let j = 0; j < adjTable[i].length;j++) {
-            adjMat.rows[i+1].cells[j+1].innerHTML = String(adjTable[i][j]);
-            if(adjTable[i][j] > 0) {
-                adjMat.rows[i+1].cells[j+1].style.backgroundColor = "LightCoral";
+    if(segments.length < 30) {
+        let titleRow = adjMat.insertRow();
+        titleRow.insertCell().innerHTML = '    ';
+        const trapArray = Array.from(trapMap.root.trap_set);
+        const segArray = Array.from(trapMap.root.seg_set);
+        const pointArray = Array.from(trapMap.root.point_set);
+        let nThings = trapArray.length + segArray.length + pointArray.length;
+        let adjTable = trapMap.root.genTable();
+        let nP = 0;
+        let nQ = 0;
+        for (let index = 0; index < pointArray.length; index++) {
+            const pt = pointArray[index];
+            if(pt.label == 'P') {
+                titleRow.insertCell().innerHTML = pt.label+nP;
+                nP++;
+            }else {
+                titleRow.insertCell().innerHTML = pt.label+nQ;
+                nQ++;
+            }
+        }
+        for (let index = 0; index < segArray.length; index++) {
+            const seg = segArray[index];
+            titleRow.insertCell().innerHTML = 'S'+index;
+        }
+        for (let index = 0; index < trapArray.length; index++) {
+            const trap = trapMap[index];
+            titleRow.insertCell().innerHTML = 'T'+index;
+        }
+        nP = 0;
+        nQ = 0;
+        for (let index = 0; index < pointArray.length; index++) {
+            const pt = pointArray[index];
+            let nRow = adjMat.insertRow();
+            if(pt.label == 'P') {
+                nRow.insertCell().innerHTML = pt.label+nP;
+                nP++;
+            }else {
+                nRow.insertCell().innerHTML = pt.label+nQ;
+                nQ++;
+            }
+            for(let ind2 = 0; ind2 < nThings; ind2++) {
+                nRow.insertCell();
+            }
+        }
+        for (let index = 0; index < segArray.length; index++) {
+            const seg = segArray[index];
+            let nRow = adjMat.insertRow();
+            nRow.insertCell().innerHTML = 'S'+index;
+            for(let ind2 = 0; ind2 < nThings; ind2++) {
+                nRow.insertCell();
+            }
+        }
+        for (let index = 0; index < trapArray.length; index++) {
+            const trap = trapMap[index];
+            let nRow = adjMat.insertRow();
+            nRow.insertCell().innerHTML = 'T'+index;
+            for(let ind2 = 0; ind2 < nThings; ind2++) {
+                nRow.insertCell();
+            }
+        }
+
+        for(let i = 0; i < adjTable.length;i++) {
+            for(let j = 0; j < adjTable[i].length;j++) {
+                adjMat.rows[i+1].cells[j+1].innerHTML = String(adjTable[i][j]);
+                if(adjTable[i][j] > 0) {
+                    adjMat.rows[i+1].cells[j+1].style.backgroundColor = "LightCoral";
+                }
             }
         }
     }
@@ -339,8 +374,8 @@ async function algorithm(vis) {
 async function doPointPicking(vis, trapMap) {
     canvas.addEventListener('click', event => {
         if (event.button === 0) {
-            let x = event.offsetX / vis.scale;
-            let y = (canvas.height - event.offsetY) / vis.scale;
+            let x = event.offsetX/vis.ratio_x;
+            let y = (canvas.height - event.offsetY)/vis.ratio_y;
             canvasClicked(x, y);
         }
     });
@@ -350,8 +385,8 @@ async function doPointPicking(vis, trapMap) {
      * @param {number} y
      */
     function canvasClicked(x, y) {
-        vis.query_point = new Point(x, y);
-        const trap = trapMap.query(x, y);
+        vis.query_point = new Point(x-vis.x_offset, y-vis.y_offset);
+        const trap = trapMap.query(x-vis.x_offset, y-vis.y_offset);
         vis.highlighted_trap = trap;
         vis.draw();
     }

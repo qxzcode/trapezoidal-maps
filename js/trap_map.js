@@ -61,11 +61,11 @@ class Segment {
      * @param {CanvasRenderingContext2D} ctx the canvas rendering context
      * @param {string} color the drawn segment color (a CSS color string)
      */
-    draw(ctx, color) {
+    draw(ctx, color, offset_x, offset_y) {
         ctx.strokeStyle = color;
         ctx.beginPath();
-        ctx.moveTo(this.p1.x, this.p1.y);
-        ctx.lineTo(this.p2.x, this.p2.y);
+        ctx.moveTo(this.p1.x + offset_x, this.p1.y + offset_y);
+        ctx.lineTo(this.p2.x + offset_x, this.p2.y + offset_y);
         ctx.stroke();
     }
 
@@ -325,6 +325,7 @@ class Tree {
     insertSeg(segment, tmap) {
         // takes in a segment and a trapezoidal map
         // inserts the segment into the map
+        if(this.seg_set.has(segment)){ return;};
         this.seg_set.add(segment);
         this.point_set.add(new PointInfo(segment.p1, 'P'))
         this.point_set.add(new PointInfo(segment.p2, 'Q'));

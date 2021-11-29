@@ -1,5 +1,5 @@
 canvas {
-    border: 1px solid #d3d3d3;
+    border: 0px solid #d3d3d3;
     align-content: center;
 }
 table {
@@ -19,4 +19,8 @@ td {
     margin:0 auto;
     text-align: center;
     visibility: hidden;
+}
+
+button:hover {
+    background: #ba0c00;
 }
