@@ -157,7 +157,7 @@ async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-/** @type HTMLCanvasElement */
+/** @type HTMLSelectElement */
 // @ts-ignore
 const inputList = document.getElementById('inputs');
 for (const key in INPUT_FILES) {
@@ -209,7 +209,10 @@ document.addEventListener('DOMContentLoaded', () => {
         loadedFromFile = false;
     })
     loadFileButton.addEventListener('click', function() {
-        let file = document.querySelector("#file-input").files[0];
+        /** @type HTMLInputElement */
+        // @ts-ignore
+        const fileInput = document.getElementById('file-input');
+        const file = fileInput.files[0];
         // let reader = new FileReader();
         // reader.addEventListener('load', function(e) {
         //         let text = e.target.result;
@@ -284,8 +287,8 @@ async function algorithm(vis) {
         if(vis.async){
             await vis.draw_and_pause();
         }else {
-            await sleep(5).then(resolve => { vis.draw(); });
-            //vis.draw();
+            vis.draw();
+            await sleep(5);
         }
     }
     vis.draw()
@@ -393,7 +396,11 @@ async function doPointPicking(vis, trapMap) {
 }
 
 function pointFromText(vis, trapMap) {
+    /** @type HTMLInputElement */
+    // @ts-ignore
     let xIn = document.getElementById('xval');
+    /** @type HTMLInputElement */
+    // @ts-ignore
     let yIn = document.getElementById('yval');
     textQuery(parseFloat(xIn.value), parseFloat(yIn.value));
     /**
@@ -408,6 +415,9 @@ function pointFromText(vis, trapMap) {
     }
 }
 
+/**
+ * @param {File} file
+ */
 async function loadFile(file) {
     // var file = '../InputFiles/tdl1818.txt';
     // var rawFile = new XMLHttpRequest();
