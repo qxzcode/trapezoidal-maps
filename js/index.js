@@ -12,14 +12,12 @@ class Visualization {
         this.y_offset = 0 - data.y_min;
         this.width = data.x_max - data.x_min;
         this.height = data.y_max - data.y_min;
-        this.aspect = this.height/this.width;
-        this.ratio_x = canvas.width/this.width;
-        this.ratio_y = canvas.height/this.height;
-        this.scale_x = 8;
-        this.scale_y = 6;
+        this.scale = canvas.height / this.height;
         this.async = true;
 
-        canvas.height = canvas.width * this.aspect;
+        // resize the canvas to fit the data aspect ratio
+        const aspect = this.height / this.width;
+        canvas.width = canvas.height / aspect;
 
         // objects and state to be visualized
         /** @type Segment[] */
@@ -40,16 +38,18 @@ class Visualization {
         // TODO: have this adapt to the data and canvas size
         ctx.resetTransform();
         ctx.translate(0, canvas.height);
-        ctx.scale(this.ratio_x, -this.ratio_y);
+        ctx.scale(this.scale, -this.scale);
 
         // clear the canvas
         ctx.clearRect(0, 0, this.width, this.height);
 
         // draw the bounding box
         ctx.strokeStyle = 'black';
-        ctx.lineWidth = 2 / this.ratio_x;
-        ctx.strokeRect((this.data.x_min + this.x_offset), (this.data.y_min + this.y_offset),
-                         (this.data.x_max + this.x_offset), (this.data.y_max + this.y_offset));
+        ctx.lineWidth = 2 / this.scale;
+        ctx.strokeRect(
+            (this.data.x_min + this.x_offset), (this.data.y_min + this.y_offset),
+            (this.data.x_max + this.x_offset), (this.data.y_max + this.y_offset)
+        );
 
         // draw the trapezoidal map
         if (this.trap_map !== null) {
@@ -65,7 +65,7 @@ class Visualization {
 
         // draw the segments
         ctx.lineCap = 'round';
-        ctx.lineWidth = 5 / this.ratio_x;
+        ctx.lineWidth = 5 / this.scale;
         for (const segment of this.segments) {
             const color = this.highlighted_segment === segment ? 'Chartreuse' : 'CadetBlue';
             segment.draw(ctx, color, this.x_offset, this.y_offset);
@@ -92,7 +92,7 @@ class Visualization {
             ctx.fillStyle = 'hsla(0, 100%, 50%, 0.1)';
         }
         ctx.strokeStyle = 'black';
-        ctx.setLineDash([5 / this.ratio_x, 5 / this.ratio_y]);
+        ctx.setLineDash([5 / this.scale, 5 / this.scale]);
 
         ctx.beginPath();
         ctx.moveTo(trap.xmin + this.x_offset, trap.top.getYpos(trap.xmin) + this.y_offset);
@@ -187,7 +187,6 @@ let loadedFromFile = false;
 let data = INPUT_FILES['qt2393'];
 
 document.addEventListener('DOMContentLoaded', () => {
-    canvas.width = 800;
     canvas.height = 600;
 
     // const segments = data.segments.map(s =>
@@ -377,8 +376,8 @@ async function algorithm(vis) {
 async function doPointPicking(vis, trapMap) {
     canvas.addEventListener('click', event => {
         if (event.button === 0) {
-            let x = event.offsetX/vis.ratio_x;
-            let y = (canvas.height - event.offsetY)/vis.ratio_y;
+            let x = event.offsetX / vis.scale;
+            let y = (canvas.height - event.offsetY) / vis.scale;
             canvasClicked(x, y);
         }
     });
