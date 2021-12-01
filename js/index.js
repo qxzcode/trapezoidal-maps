@@ -186,6 +186,24 @@ let id_str = 'qt2393';
 let loadedFromFile = false;
 let data = INPUT_FILES['qt2393'];
 
+/** @type {HTMLInputElement} */
+// @ts-ignore
+const stepSpeedInput = document.getElementById('step_speed');
+function getStepDelay() {
+    const MAX_DELAY = 1000;
+    const MIN_DELAY = 15;
+
+    const sliderValue = parseFloat(stepSpeedInput.value);
+    const delayFactor = (100 - sliderValue) / 100;
+    if (delayFactor <= 0) {
+        return 0;  // no delay (don't even draw or sleep)
+    } else {
+        // lerp in log space to get a logarithmic slider
+        const logDelay = delayFactor * Math.log(MAX_DELAY) + (1 - delayFactor) * Math.log(MIN_DELAY);
+        return Math.exp(logDelay);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     canvas.height = 600;
 
@@ -286,8 +304,11 @@ async function algorithm(vis) {
         if(vis.async){
             await vis.draw_and_pause();
         }else {
-            vis.draw();
-            await sleep(5);
+            const delayMillis = getStepDelay();
+            if (delayMillis > 0) {
+                vis.draw();
+                await sleep(delayMillis);
+            }
         }
     }
     vis.draw()
