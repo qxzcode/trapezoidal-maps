@@ -157,17 +157,41 @@ async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+/** @type Object */
+let pathList = {
+    Simple1: '/InputFiles/ac7717.txt',
+    Simple2: '/InputFiles/qt2393.txt',
+    Simple3: '/InputFiles/axb1107.txt',
+    Simple4: '/InputFiles/ahk1190.txt',
+    Germany: '/InputFiles/DEU_adm1_reproj_simp1.txt',
+};
+
+// /** @type HTMLSelectElement */
+// // @ts-ignore
+// const inputList = document.getElementById('inputs');
+// for (const key in INPUT_FILES) {
+//     let opt = document.createElement("option");
+//     opt.value = key;
+//     opt.innerHTML = key;
+//     inputList.appendChild(opt);
+// }
+
+// $.getHTML('./InputFiles').done((json) => {
+//     console.log(json); //["doc1.jpg", "doc2.jpg", "doc3.jpg"] 
+// }).fail((jqxhr, textStatus, error) => {
+//     var err = textStatus + ", " + error;
+//     console.log("Request Failed: " + err);
+// });
+
 /** @type HTMLSelectElement */
 // @ts-ignore
-const inputList = document.getElementById('inputs');
-for (const key in INPUT_FILES) {
+const fileList = document.getElementById('fileInputs');
+for (const key in pathList) {
     let opt = document.createElement("option");
-    opt.value = key;
+    opt.value = pathList[key];
     opt.innerHTML = key;
-    inputList.appendChild(opt);
+    fileList.appendChild(opt);
 }
-
-const inputFilePath = document.getElementById('filePath');
 
 
 /** @type HTMLCanvasElement */
@@ -222,28 +246,22 @@ document.addEventListener('DOMContentLoaded', () => {
         algorithm(visualization);
     }
     step_button.addEventListener('click', start);
-    loadButton.addEventListener('click', () => {
-        id_str = inputList.value;
-        loadedFromFile = false;
-    })
+    // loadButton.addEventListener('click', () => {
+    //     id_str = inputList.value;
+    //     loadedFromFile = false;
+    // })
     loadFileButton.addEventListener('click', function () {
-        /** @type HTMLInputElement */
-        // @ts-ignore
-        const fileInput = document.getElementById('file-input');
-        const file = fileInput.files[0];
-        // let reader = new FileReader();
-        // reader.addEventListener('load', function(e) {
-        //         let text = e.target.result;
-        //         allText = text;
-        // });
-        // reader.readAsText(file);
         visualization = null;
         step_button.disabled = true;
-        loadFile(file).then(result => {
+        step_button.removeEventListener('click', start);
+        loadFile(fileList.value).then(result => {
             data = result
             visualization = new Visualization(data);
+            visualization.draw();
             loadedFromFile = true;
             step_button.disabled = false;
+            step_button.addEventListener('click', start);
+            step_button.textContent = 'Start';
         });
     });
     // loadFileButton.addEventListener('click', () => {
@@ -261,7 +279,7 @@ let adjMat = document.getElementById('adjMat');
 
 let queryButton = document.getElementById('queryButton');
 
-let loadButton = document.getElementById('load_button');
+// let loadButton = document.getElementById('load_button');
 let loadFileButton = document.getElementById('load_file_button');
 let allText = '';
 
@@ -433,29 +451,22 @@ function doQueryAndDraw(vis, trapMap, x, y) {
 }
 
 /**
- * @param {File} file
+ * @param {String} fileName
  */
-async function loadFile(file) {
+async function loadFile(fileName) {
     // var file = '../InputFiles/tdl1818.txt';
-    // var rawFile = new XMLHttpRequest();
-    // var allText = 'ERROR';
-    // rawFile.open("GET", filename, false);
-    // rawFile.onreadystatechange = function ()
-    // {
-    //     if(rawFile.readyState === 4)
-    //     {
-    //         if(rawFile.status === 200 || rawFile.status == 0)
-    //         {
-    //             allText = rawFile.responseText;
-    //         }
-    //     }
-    // }
-    // rawFile.send(null);
-    allText = await file.text();
+    var rawFile = new XMLHttpRequest();
+    var allText = 'ERROR';
+    let data = {};
+
+    const utf8Decoder = new TextDecoder('utf-8');
+    let response = await fetch(fileName);
+    const reader = response.body.getReader();
+    let { value: chunk, done: readerDone } = await reader.read();
+    allText = chunk ? utf8Decoder.decode(chunk) : '';
 
     const lines = allText.split('\n');
 
-    let data = {};
     let nlines = parseInt(lines[0]);
 
     let bbox = lines[1].split(' ');
@@ -477,4 +488,6 @@ async function loadFile(file) {
     }
 
     return data;
+
+    
 }

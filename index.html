@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="pseudocode/prism.css" rel="stylesheet" />
     <link rel="stylesheet" href="simple/simple.min.css">
     <link rel="stylesheet" href="index.css">
     <title>Trapezoidal Maps</title>
@@ -14,23 +15,63 @@
     </header>
 
     <main>
-        <label for="inputs">Choose an input id:</label>
+        <center>
+            <label for="file-input">Select a file</label>
+            <select name="fileInputs" id="fileInputs"></select>
+            <button id="load_file_button">Load from File</button><br><br>
+            <button id="step_button">Start</button>
+            <button id="finish_button">Finish</button>
+            <br>
+            <label for="step_speed">Step speed:</label><br>
+            (slow) <input type="range" id="step_speed" min="0" max="100" value="0"> (instant)
+            <br>
+            <br>
+        </center>
 
-        <select name="inputs" id="inputs"></select>
-        <button id="load_button">Load</button><br><br>
-
-        <label for="file-input">Or select a file</label>
-        <input type="file" id="file-input" />
-        <button id="load_file_button">Load from File</button><br><br>
-
-        <canvas id="canvas"></canvas><br><br>
-        <button id="step_button">Start</button>
-        <button id="finish_button">Finish</button>
-        <br>
-        <label for="step_speed">Step speed:</label><br>
-        (slow) <input type="range" id="step_speed" min="0" max="100" value="0"> (instant)
-        <br>
-        <br>
+        <div class="row">
+            <div class="column">
+                <canvas id="canvas"></canvas><br><br>
+            </div>
+            <div class="column">
+                <script src="pseudocode/prism.js"></script>
+                <pre data-line=5 class="language-plain line-numbers"><code>INSERT_SEGMENT(Segment S, Trapezoidal Map T_MAP) 
+	let T_LIST = findTrapsCrossed(S, T_MAP)
+	for each T in T_LIST
+		if(T.contains(S.p1) AND T.contains(S.p2))
+			// CASE 2
+			create node structure:
+			ROOT = X_NODE(S.p1)
+				* L -> T_NODE
+				* R -> X_NODE(S.p2)
+					* L -> Y_NODE(S)
+						L -> T_NODE
+						R -> T_NODE
+					* R -> T_NODE
+		else if(T.contains(S.p1) || T.contains(S.p2))
+			// CASE 1
+			p = point contained in T
+			create node structure:
+			(assuming p is S.p1, swap L & R if p is S.p2)
+			ROOT = X_NODE(p)
+				* L -> T_NODE
+				* R -> Y_NODE(S)
+					L -> T_NODE
+					R -> T_NODE
+		else
+			// CASE 3
+			create node structure:
+			ROOT = Y_NODE(S)
+				L -> T_NODE
+				R -> T_NODE
+		end
+		Place node structure at position of T in T_MAP
+		Delete(T)
+		MERGE_ADJACENT_TRAPEZOIDS(ROOT)
+	end
+end</code></pre>
+            </div>
+        </div>
+        
         <div id="queryDiv">
             <label for="xval">X position:</label>
             <input type="number" id="xval" name="xval" min="0" max="100"><br><br>
