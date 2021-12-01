@@ -213,21 +213,24 @@ class TrapezoidalMap {
      * 
      * @param {number} x 
      * @param {number} y 
-     * @returns {Trapezoid}
+     * @returns {[Trapezoid,Object]}
      */
     query(x, y) {
         let currentNode = this.root.root;
         let queryPoint = new Point(x, y);
+        let queryList = {};
 
         while (currentNode.hasChildren()) {
             let dir = currentNode.navigate(queryPoint);
             let nodeName = this.root.getNodeName(currentNode);
+            queryList[nodeName] = currentNode;
             console.log(nodeName);
             currentNode = dir ? currentNode.left : currentNode.right;
         }
         let nodeName = this.root.getNodeName(currentNode);
+        queryList[nodeName] = currentNode;
         console.log(nodeName);
-        return currentNode.data;
+        return [currentNode.data,queryList];
     }
 }
 
