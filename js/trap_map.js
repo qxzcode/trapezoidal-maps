@@ -325,7 +325,7 @@ class Tree {
     insertSeg(segment, tmap) {
         // takes in a segment and a trapezoidal map
         // inserts the segment into the map
-        if(this.seg_set.has(segment)){ return;};
+        if (this.seg_set.has(segment)) { return; }
         this.seg_set.add(segment);
         this.point_set.add(new PointInfo(segment.p1, 'P'))
         this.point_set.add(new PointInfo(segment.p2, 'Q'));
@@ -395,7 +395,7 @@ class Tree {
         } else {
             let compPointIndex = (element) => element.pt.equals(node.data);
             index = pointArray.findIndex(compPointIndex);
-            let indNum = Math.floor(index/2);
+            let indNum = Math.floor(index / 2);
             nodeName = pointArray[index].label + indNum;
         }
         return nodeName;
@@ -684,10 +684,10 @@ class Tree {
         while (currentNode.hasChildren()) {
             if (currentNode.type == nodeTypes.X_NODE) {
                 // interpolate a bit up the line if we have a shared point
-                if(currentNode.data.equals(segment.p1)) {
+                if (currentNode.data.equals(segment.p1)) {
                     let t = 0.999;
-                    let t_pt = new Point(segment.p1.x,segment.p1.y);
-                    t_pt.x = segment.p1.x * t + segment.p2.x * (1-t);
+                    let t_pt = new Point(segment.p1.x, segment.p1.y);
+                    t_pt.x = segment.p1.x * t + segment.p2.x * (1 - t);
                     segment.p1.x = t_pt.x;
                 }
                 const nav1 = currentNode.navigate(segment.p1);
@@ -715,10 +715,10 @@ class Tree {
         while (currentNode.hasChildren()) {
             if (currentNode.type == nodeTypes.X_NODE) {
                 // interpolate a bit down the line if we have a shared point
-                if(currentNode.data.equals(segment.p2)) {
+                if (currentNode.data.equals(segment.p2)) {
                     let t = 0.999;
-                    let t_pt = new Point(segment.p2.x,segment.p2.y);
-                    t_pt.x = segment.p1.x * (1-t) + segment.p2.x * (t);
+                    let t_pt = new Point(segment.p2.x, segment.p2.y);
+                    t_pt.x = segment.p1.x * (1 - t) + segment.p2.x * (t);
                     segment.p2.x = t_pt.x;
                 }
                 const nav1 = currentNode.navigate(segment.p1);

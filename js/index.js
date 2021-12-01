@@ -134,7 +134,7 @@ class Visualization {
             this.async = false;
         }
         step_button.addEventListener('click', this.step_handler);
-        finish_button.addEventListener('click',this.continuer);
+        finish_button.addEventListener('click', this.continuer);
     }
 
     async draw_and_pause() {
@@ -148,7 +148,7 @@ class Visualization {
         step_button.textContent = 'Done';
         step_button.disabled = true;
         step_button.removeEventListener('click', this.step_handler);
-        finish_button.removeEventListener('click',this.continuer);
+        finish_button.removeEventListener('click', this.continuer);
         finish_button.style.display = "none";
     }
 }
@@ -190,6 +190,7 @@ let data = INPUT_FILES['qt2393'];
 // @ts-ignore
 const stepSpeedInput = document.getElementById('step_speed');
 function getStepDelay() {
+    // step delays are in milliseconds
     const MAX_DELAY = 1000;
     const MIN_DELAY = 15;
 
@@ -225,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
         id_str = inputList.value;
         loadedFromFile = false;
     })
-    loadFileButton.addEventListener('click', function() {
+    loadFileButton.addEventListener('click', function () {
         /** @type HTMLInputElement */
         // @ts-ignore
         const fileInput = document.getElementById('file-input');
@@ -238,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // reader.readAsText(file);
         visualization = null;
         step_button.disabled = true;
-        loadFile(file).then(result => { 
+        loadFile(file).then(result => {
             data = result
             visualization = new Visualization(data);
             loadedFromFile = true;
@@ -271,8 +272,8 @@ let allText = '';
 //* @param {Segment[]} segments
 // async function algorithm(vis, segments) {
 async function algorithm(vis) {
-    if(!loadedFromFile) {
-        data = INPUT_FILES[id_str]; 
+    if (!loadedFromFile) {
+        data = INPUT_FILES[id_str];
     }
     let segments = data.segments.map(s =>
         new Segment(new Point(s.x1, s.y1), new Point(s.x2, s.y2)));
@@ -281,7 +282,7 @@ async function algorithm(vis) {
 
     let queryDiv = document.getElementById('queryDiv');
     queryDiv.style.visibility = 'visible';
-    queryButton.addEventListener('click', (event) => {pointFromText(vis,trapMap)});
+    queryButton.addEventListener('click', (event) => { pointFromText(vis, trapMap) });
 
 
 
@@ -301,9 +302,9 @@ async function algorithm(vis) {
         // update the visualization and pause
         vis.segments.push(segment);
         vis.highlighted_segment = segment;
-        if(vis.async){
+        if (vis.async) {
             await vis.draw_and_pause();
-        }else {
+        } else {
             const delayMillis = getStepDelay();
             if (delayMillis > 0) {
                 vis.draw();
@@ -313,7 +314,7 @@ async function algorithm(vis) {
     }
     vis.draw()
 
-    if(segments.length < 30) {
+    if (segments.length < 30) {
         let titleRow = adjMat.insertRow();
         titleRow.insertCell().innerHTML = '    ';
         const trapArray = Array.from(trapMap.root.trap_set);
@@ -325,60 +326,60 @@ async function algorithm(vis) {
         let nQ = 0;
         for (let index = 0; index < pointArray.length; index++) {
             const pt = pointArray[index];
-            if(pt.label == 'P') {
-                titleRow.insertCell().innerHTML = pt.label+nP;
+            if (pt.label == 'P') {
+                titleRow.insertCell().innerHTML = pt.label + nP;
                 nP++;
-            }else {
-                titleRow.insertCell().innerHTML = pt.label+nQ;
+            } else {
+                titleRow.insertCell().innerHTML = pt.label + nQ;
                 nQ++;
             }
         }
         for (let index = 0; index < segArray.length; index++) {
             const seg = segArray[index];
-            titleRow.insertCell().innerHTML = 'S'+index;
+            titleRow.insertCell().innerHTML = 'S' + index;
         }
         for (let index = 0; index < trapArray.length; index++) {
             const trap = trapMap[index];
-            titleRow.insertCell().innerHTML = 'T'+index;
+            titleRow.insertCell().innerHTML = 'T' + index;
         }
         nP = 0;
         nQ = 0;
         for (let index = 0; index < pointArray.length; index++) {
             const pt = pointArray[index];
             let nRow = adjMat.insertRow();
-            if(pt.label == 'P') {
-                nRow.insertCell().innerHTML = pt.label+nP;
+            if (pt.label == 'P') {
+                nRow.insertCell().innerHTML = pt.label + nP;
                 nP++;
-            }else {
-                nRow.insertCell().innerHTML = pt.label+nQ;
+            } else {
+                nRow.insertCell().innerHTML = pt.label + nQ;
                 nQ++;
             }
-            for(let ind2 = 0; ind2 < nThings; ind2++) {
+            for (let ind2 = 0; ind2 < nThings; ind2++) {
                 nRow.insertCell();
             }
         }
         for (let index = 0; index < segArray.length; index++) {
             const seg = segArray[index];
             let nRow = adjMat.insertRow();
-            nRow.insertCell().innerHTML = 'S'+index;
-            for(let ind2 = 0; ind2 < nThings; ind2++) {
+            nRow.insertCell().innerHTML = 'S' + index;
+            for (let ind2 = 0; ind2 < nThings; ind2++) {
                 nRow.insertCell();
             }
         }
         for (let index = 0; index < trapArray.length; index++) {
             const trap = trapMap[index];
             let nRow = adjMat.insertRow();
-            nRow.insertCell().innerHTML = 'T'+index;
-            for(let ind2 = 0; ind2 < nThings; ind2++) {
+            nRow.insertCell().innerHTML = 'T' + index;
+            for (let ind2 = 0; ind2 < nThings; ind2++) {
                 nRow.insertCell();
             }
         }
 
-        for(let i = 0; i < adjTable.length;i++) {
-            for(let j = 0; j < adjTable[i].length;j++) {
-                adjMat.rows[i+1].cells[j+1].innerHTML = String(adjTable[i][j]);
-                if(adjTable[i][j] > 0) {
-                    adjMat.rows[i+1].cells[j+1].style.backgroundColor = "LightCoral";
+        for (let i = 0; i < adjTable.length; i++) {
+            for (let j = 0; j < adjTable[i].length; j++) {
+                adjMat.rows[i + 1].cells[j + 1].innerHTML = String(adjTable[i][j]);
+                if (adjTable[i][j] > 0) {
+                    adjMat.rows[i + 1].cells[j + 1].style.backgroundColor = "LightCoral";
                 }
             }
         }
@@ -399,22 +400,15 @@ async function doPointPicking(vis, trapMap) {
         if (event.button === 0) {
             let x = event.offsetX / vis.scale;
             let y = (canvas.height - event.offsetY) / vis.scale;
-            canvasClicked(x, y);
+            doQueryAndDraw(vis, trapMap, x - vis.x_offset, y - vis.y_offset);
         }
     });
-
-    /**
-     * @param {number} x
-     * @param {number} y
-     */
-    function canvasClicked(x, y) {
-        vis.query_point = new Point(x-vis.x_offset, y-vis.y_offset);
-        const trap = trapMap.query(x-vis.x_offset, y-vis.y_offset);
-        vis.highlighted_trap = trap;
-        vis.draw();
-    }
 }
 
+/**
+ * @param {Visualization} vis
+ * @param {TrapezoidalMap} trapMap
+ */
 function pointFromText(vis, trapMap) {
     /** @type HTMLInputElement */
     // @ts-ignore
@@ -422,17 +416,20 @@ function pointFromText(vis, trapMap) {
     /** @type HTMLInputElement */
     // @ts-ignore
     let yIn = document.getElementById('yval');
-    textQuery(parseFloat(xIn.value), parseFloat(yIn.value));
-    /**
-     * @param {number} x
-     * @param {number} y
-     */
-     function textQuery(x,y) {
-        vis.query_point = new Point(x, y);
-        const trap = trapMap.query(x, y);
-        vis.highlighted_trap = trap;
-        vis.draw();
-    }
+    doQueryAndDraw(vis, trapMap, parseFloat(xIn.value), parseFloat(yIn.value));
+}
+
+/**
+ * @param {Visualization} vis
+ * @param {TrapezoidalMap} trapMap
+ * @param {number} x - query x coordinate, in data coordinates
+ * @param {number} y - query y coordinate, in data coordinates
+ */
+function doQueryAndDraw(vis, trapMap, x, y) {
+    vis.query_point = new Point(x, y);
+    const trap = trapMap.query(x, y);
+    vis.highlighted_trap = trap;
+    vis.draw();
 }
 
 /**
@@ -472,8 +469,8 @@ async function loadFile(file) {
     for (let index = 2; index < lines.length; index++) {
         const element = lines[index];
         let vals = element.split(' ');
-        if(vals.length > 3){
-            data.segments.push({x1: parseFloat(vals[0]), y1: parseFloat(vals[1]), x2: parseFloat(vals[2]), y2: parseFloat(vals[3])});
+        if (vals.length > 3) {
+            data.segments.push({ x1: parseFloat(vals[0]), y1: parseFloat(vals[1]), x2: parseFloat(vals[2]), y2: parseFloat(vals[3]) });
         } else {
             console.log('Reading a line without enough values for a segment');
         }
