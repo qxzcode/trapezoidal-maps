@@ -12,14 +12,12 @@ class Visualization {
         this.y_offset = 0 - data.y_min;
         this.width = data.x_max - data.x_min;
         this.height = data.y_max - data.y_min;
-        this.aspect = this.height/this.width;
-        this.ratio_x = canvas.width/this.width;
-        this.ratio_y = canvas.height/this.height;
-        this.scale_x = 8;
-        this.scale_y = 6;
+        this.scale = canvas.height / this.height;
         this.async = true;
 
-        canvas.height = canvas.width * this.aspect;
+        // resize the canvas to fit the data aspect ratio
+        const aspect = this.height / this.width;
+        canvas.width = canvas.height / aspect;
 
         // objects and state to be visualized
         /** @type Segment[] */
@@ -40,16 +38,18 @@ class Visualization {
         // TODO: have this adapt to the data and canvas size
         ctx.resetTransform();
         ctx.translate(0, canvas.height);
-        ctx.scale(this.ratio_x, -this.ratio_y);
+        ctx.scale(this.scale, -this.scale);
 
         // clear the canvas
         ctx.clearRect(0, 0, this.width, this.height);
 
         // draw the bounding box
         ctx.strokeStyle = 'black';
-        ctx.lineWidth = 2 / this.ratio_x;
-        ctx.strokeRect((this.data.x_min + this.x_offset), (this.data.y_min + this.y_offset),
-                         (this.data.x_max + this.x_offset), (this.data.y_max + this.y_offset));
+        ctx.lineWidth = 2 / this.scale;
+        ctx.strokeRect(
+            (this.data.x_min + this.x_offset), (this.data.y_min + this.y_offset),
+            (this.data.x_max + this.x_offset), (this.data.y_max + this.y_offset)
+        );
 
         // draw the trapezoidal map
         if (this.trap_map !== null) {
@@ -65,7 +65,7 @@ class Visualization {
 
         // draw the segments
         ctx.lineCap = 'round';
-        ctx.lineWidth = 5 / this.ratio_x;
+        ctx.lineWidth = 5 / this.scale;
         for (const segment of this.segments) {
             const color = this.highlighted_segment === segment ? 'Chartreuse' : 'CadetBlue';
             segment.draw(ctx, color, this.x_offset, this.y_offset);
@@ -92,7 +92,7 @@ class Visualization {
             ctx.fillStyle = 'hsla(0, 100%, 50%, 0.1)';
         }
         ctx.strokeStyle = 'black';
-        ctx.setLineDash([5 / this.ratio_x, 5 / this.ratio_y]);
+        ctx.setLineDash([5 / this.scale, 5 / this.scale]);
 
         ctx.beginPath();
         ctx.moveTo(trap.xmin + this.x_offset, trap.top.getYpos(trap.xmin) + this.y_offset);
@@ -134,7 +134,7 @@ class Visualization {
             this.async = false;
         }
         step_button.addEventListener('click', this.step_handler);
-        finish_button.addEventListener('click',this.continuer);
+        finish_button.addEventListener('click', this.continuer);
     }
 
     async draw_and_pause() {
@@ -148,7 +148,7 @@ class Visualization {
         step_button.textContent = 'Done';
         step_button.disabled = true;
         step_button.removeEventListener('click', this.step_handler);
-        finish_button.removeEventListener('click',this.continuer);
+        finish_button.removeEventListener('click', this.continuer);
         finish_button.style.display = "none";
     }
 }
@@ -157,7 +157,7 @@ async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-/** @type HTMLCanvasElement */
+/** @type HTMLSelectElement */
 // @ts-ignore
 const inputList = document.getElementById('inputs');
 for (const key in INPUT_FILES) {
@@ -186,8 +186,26 @@ let id_str = 'qt2393';
 let loadedFromFile = false;
 let data = INPUT_FILES['qt2393'];
 
+/** @type {HTMLInputElement} */
+// @ts-ignore
+const stepSpeedInput = document.getElementById('step_speed');
+function getStepDelay() {
+    // step delays are in milliseconds
+    const MAX_DELAY = 1000;
+    const MIN_DELAY = 15;
+
+    const sliderValue = parseFloat(stepSpeedInput.value);
+    const delayFactor = (100 - sliderValue) / 100;
+    if (delayFactor <= 0) {
+        return 0;  // no delay (don't even draw or sleep)
+    } else {
+        // lerp in log space to get a logarithmic slider
+        const logDelay = delayFactor * Math.log(MAX_DELAY) + (1 - delayFactor) * Math.log(MIN_DELAY);
+        return Math.exp(logDelay);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    canvas.width = 800;
     canvas.height = 600;
 
     // const segments = data.segments.map(s =>
@@ -208,8 +226,11 @@ document.addEventListener('DOMContentLoaded', () => {
         id_str = inputList.value;
         loadedFromFile = false;
     })
-    loadFileButton.addEventListener('click', function() {
-        let file = document.querySelector("#file-input").files[0];
+    loadFileButton.addEventListener('click', function () {
+        /** @type HTMLInputElement */
+        // @ts-ignore
+        const fileInput = document.getElementById('file-input');
+        const file = fileInput.files[0];
         // let reader = new FileReader();
         // reader.addEventListener('load', function(e) {
         //         let text = e.target.result;
@@ -218,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // reader.readAsText(file);
         visualization = null;
         step_button.disabled = true;
-        loadFile(file).then(result => { 
+        loadFile(file).then(result => {
             data = result
             visualization = new Visualization(data);
             loadedFromFile = true;
@@ -251,8 +272,8 @@ let allText = '';
 //* @param {Segment[]} segments
 // async function algorithm(vis, segments) {
 async function algorithm(vis) {
-    if(!loadedFromFile) {
-        data = INPUT_FILES[id_str]; 
+    if (!loadedFromFile) {
+        data = INPUT_FILES[id_str];
     }
     let segments = data.segments.map(s =>
         new Segment(new Point(s.x1, s.y1), new Point(s.x2, s.y2)));
@@ -261,7 +282,7 @@ async function algorithm(vis) {
 
     let queryDiv = document.getElementById('queryDiv');
     queryDiv.style.visibility = 'visible';
-    queryButton.addEventListener('click', (event) => {pointFromText(vis,trapMap)});
+    queryButton.addEventListener('click', (event) => { pointFromText(vis, trapMap) });
 
 
 
@@ -281,16 +302,19 @@ async function algorithm(vis) {
         // update the visualization and pause
         vis.segments.push(segment);
         vis.highlighted_segment = segment;
-        if(vis.async){
+        if (vis.async) {
             await vis.draw_and_pause();
-        }else {
-            await sleep(5).then(resolve => { vis.draw(); });
-            //vis.draw();
+        } else {
+            const delayMillis = getStepDelay();
+            if (delayMillis > 0) {
+                vis.draw();
+                await sleep(delayMillis);
+            }
         }
     }
     vis.draw()
 
-    if(segments.length < 30) {
+    if (segments.length < 30) {
         let titleRow = adjMat.insertRow();
         titleRow.insertCell().innerHTML = '    ';
         const trapArray = Array.from(trapMap.root.trap_set);
@@ -302,60 +326,60 @@ async function algorithm(vis) {
         let nQ = 0;
         for (let index = 0; index < pointArray.length; index++) {
             const pt = pointArray[index];
-            if(pt.label == 'P') {
-                titleRow.insertCell().innerHTML = pt.label+nP;
+            if (pt.label == 'P') {
+                titleRow.insertCell().innerHTML = pt.label + nP;
                 nP++;
-            }else {
-                titleRow.insertCell().innerHTML = pt.label+nQ;
+            } else {
+                titleRow.insertCell().innerHTML = pt.label + nQ;
                 nQ++;
             }
         }
         for (let index = 0; index < segArray.length; index++) {
             const seg = segArray[index];
-            titleRow.insertCell().innerHTML = 'S'+index;
+            titleRow.insertCell().innerHTML = 'S' + index;
         }
         for (let index = 0; index < trapArray.length; index++) {
             const trap = trapMap[index];
-            titleRow.insertCell().innerHTML = 'T'+index;
+            titleRow.insertCell().innerHTML = 'T' + index;
         }
         nP = 0;
         nQ = 0;
         for (let index = 0; index < pointArray.length; index++) {
             const pt = pointArray[index];
             let nRow = adjMat.insertRow();
-            if(pt.label == 'P') {
-                nRow.insertCell().innerHTML = pt.label+nP;
+            if (pt.label == 'P') {
+                nRow.insertCell().innerHTML = pt.label + nP;
                 nP++;
-            }else {
-                nRow.insertCell().innerHTML = pt.label+nQ;
+            } else {
+                nRow.insertCell().innerHTML = pt.label + nQ;
                 nQ++;
             }
-            for(let ind2 = 0; ind2 < nThings; ind2++) {
+            for (let ind2 = 0; ind2 < nThings; ind2++) {
                 nRow.insertCell();
             }
         }
         for (let index = 0; index < segArray.length; index++) {
             const seg = segArray[index];
             let nRow = adjMat.insertRow();
-            nRow.insertCell().innerHTML = 'S'+index;
-            for(let ind2 = 0; ind2 < nThings; ind2++) {
+            nRow.insertCell().innerHTML = 'S' + index;
+            for (let ind2 = 0; ind2 < nThings; ind2++) {
                 nRow.insertCell();
             }
         }
         for (let index = 0; index < trapArray.length; index++) {
             const trap = trapMap[index];
             let nRow = adjMat.insertRow();
-            nRow.insertCell().innerHTML = 'T'+index;
-            for(let ind2 = 0; ind2 < nThings; ind2++) {
+            nRow.insertCell().innerHTML = 'T' + index;
+            for (let ind2 = 0; ind2 < nThings; ind2++) {
                 nRow.insertCell();
             }
         }
 
-        for(let i = 0; i < adjTable.length;i++) {
-            for(let j = 0; j < adjTable[i].length;j++) {
-                adjMat.rows[i+1].cells[j+1].innerHTML = String(adjTable[i][j]);
-                if(adjTable[i][j] > 0) {
-                    adjMat.rows[i+1].cells[j+1].style.backgroundColor = "LightCoral";
+        for (let i = 0; i < adjTable.length; i++) {
+            for (let j = 0; j < adjTable[i].length; j++) {
+                adjMat.rows[i + 1].cells[j + 1].innerHTML = String(adjTable[i][j]);
+                if (adjTable[i][j] > 0) {
+                    adjMat.rows[i + 1].cells[j + 1].style.backgroundColor = "LightCoral";
                 }
             }
         }
@@ -374,40 +398,43 @@ async function algorithm(vis) {
 async function doPointPicking(vis, trapMap) {
     canvas.addEventListener('click', event => {
         if (event.button === 0) {
-            let x = event.offsetX/vis.ratio_x;
-            let y = (canvas.height - event.offsetY)/vis.ratio_y;
-            canvasClicked(x, y);
+            let x = event.offsetX / vis.scale;
+            let y = (canvas.height - event.offsetY) / vis.scale;
+            doQueryAndDraw(vis, trapMap, x - vis.x_offset, y - vis.y_offset);
         }
     });
-
-    /**
-     * @param {number} x
-     * @param {number} y
-     */
-    function canvasClicked(x, y) {
-        vis.query_point = new Point(x-vis.x_offset, y-vis.y_offset);
-        const trap = trapMap.query(x-vis.x_offset, y-vis.y_offset);
-        vis.highlighted_trap = trap;
-        vis.draw();
-    }
 }
 
+/**
+ * @param {Visualization} vis
+ * @param {TrapezoidalMap} trapMap
+ */
 function pointFromText(vis, trapMap) {
+    /** @type HTMLInputElement */
+    // @ts-ignore
     let xIn = document.getElementById('xval');
+    /** @type HTMLInputElement */
+    // @ts-ignore
     let yIn = document.getElementById('yval');
-    textQuery(parseFloat(xIn.value), parseFloat(yIn.value));
-    /**
-     * @param {number} x
-     * @param {number} y
-     */
-     function textQuery(x,y) {
-        vis.query_point = new Point(x, y);
-        const trap = trapMap.query(x, y);
-        vis.highlighted_trap = trap;
-        vis.draw();
-    }
+    doQueryAndDraw(vis, trapMap, parseFloat(xIn.value), parseFloat(yIn.value));
 }
 
+/**
+ * @param {Visualization} vis
+ * @param {TrapezoidalMap} trapMap
+ * @param {number} x - query x coordinate, in data coordinates
+ * @param {number} y - query y coordinate, in data coordinates
+ */
+function doQueryAndDraw(vis, trapMap, x, y) {
+    vis.query_point = new Point(x, y);
+    const trap = trapMap.query(x, y);
+    vis.highlighted_trap = trap;
+    vis.draw();
+}
+
+/**
+ * @param {File} file
+ */
 async function loadFile(file) {
     // var file = '../InputFiles/tdl1818.txt';
     // var rawFile = new XMLHttpRequest();
@@ -442,8 +469,8 @@ async function loadFile(file) {
     for (let index = 2; index < lines.length; index++) {
         const element = lines[index];
         let vals = element.split(' ');
-        if(vals.length > 3){
-            data.segments.push({x1: parseFloat(vals[0]), y1: parseFloat(vals[1]), x2: parseFloat(vals[2]), y2: parseFloat(vals[3])});
+        if (vals.length > 3) {
+            data.segments.push({ x1: parseFloat(vals[0]), y1: parseFloat(vals[1]), x2: parseFloat(vals[2]), y2: parseFloat(vals[3]) });
         } else {
             console.log('Reading a line without enough values for a segment');
         }
