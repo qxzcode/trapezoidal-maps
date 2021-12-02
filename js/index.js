@@ -158,7 +158,7 @@ async function sleep(ms) {
 }
 
 /** @type Object */
-let pathList = {
+const PATH_LIST = {
     Simple1: '/InputFiles/ac7717.txt',
     Simple2: '/InputFiles/qt2393.txt',
     Simple3: '/InputFiles/axb1107.txt',
@@ -186,9 +186,9 @@ let pathList = {
 /** @type HTMLSelectElement */
 // @ts-ignore
 const fileList = document.getElementById('fileInputs');
-for (const key in pathList) {
+for (const key in PATH_LIST) {
     let opt = document.createElement("option");
-    opt.value = pathList[key];
+    opt.value = PATH_LIST[key];
     opt.innerHTML = key;
     fileList.appendChild(opt);
 }
@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     //     id_str = inputList.value;
     //     loadedFromFile = false;
     // })
-    loadFileButton.addEventListener('click', function () {
+    fileList.addEventListener('change', function () {
         visualization = null;
         step_button.disabled = true;
         step_button.removeEventListener('click', start);
@@ -264,23 +264,14 @@ document.addEventListener('DOMContentLoaded', () => {
             step_button.textContent = 'Start';
         });
     });
-    // loadFileButton.addEventListener('click', () => {
-    //     let fNameStr = inputFilePath.value;
-    //     visualization = null;
-    //     data = loadFile(fNameStr);
-    //     visualization = new Visualization(data);
-    //     loadedFromFile = true;
-    // })
 });
 
 /** @type HTMLTableElement */
 // @ts-ignore
-let adjMat = document.getElementById('adjMat');
+const adjMat = document.getElementById('adjMat');
 
-let queryButton = document.getElementById('queryButton');
+const queryButton = document.getElementById('queryButton');
 
-// let loadButton = document.getElementById('load_button');
-let loadFileButton = document.getElementById('load_file_button');
 let allText = '';
 
 
@@ -476,6 +467,7 @@ async function loadFile(fileName) {
     data.x_max = parseFloat(bbox[2]);
     data.y_max = parseFloat(bbox[3]);
 
+    /** @type {{ x1: number; y1: number; x2: number; y2: number; }[]} */
     data.segments = [];
 
     for (let index = 2; index < lines.length; index++) {
@@ -489,6 +481,4 @@ async function loadFile(fileName) {
     }
 
     return data;
-
-    
 }
