@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -9,24 +10,27 @@
     <link rel="stylesheet" href="index.css">
     <title>Trapezoidal Maps</title>
 </head>
+
 <body>
     <header>
         <h1>Where Am I?<br><small>An Explanation of Trapezoidal Maps</small></h1>
     </header>
 
     <main>
-        <center>
-            <label for="file-input">Select a file</label>
-            <select name="fileInputs" id="fileInputs"></select>
-            <br>
-            <button id="step_button">Start</button>
-            <button id="finish_button">Finish</button>
-            <br>
-            <label for="step_speed">Step speed:</label><br>
-            (slow) <input type="range" id="step_speed" min="0" max="100" value="0"> (instant)
-            <br>
-            <br>
-        </center>
+        <div class="top-controls">
+            <div>
+                <label for="file-input">Select a file</label>
+                <select name="fileInputs" id="fileInputs"></select>
+            </div>
+            <div class="control-buttons-wrap">
+                <button id="step_button">Start</button>
+                <button id="finish_button">Finish</button>
+            </div>
+            <div>
+                <label for="step_speed">Step speed:</label><br>
+                (slow) <input type="range" id="step_speed" min="0" max="100" value="0"> (instant)
+            </div>
+        </div>
 
         <div class="row">
             <div class="column">
@@ -71,7 +75,7 @@
 end</code></pre>
             </div>
         </div>
-        
+
         <div id="queryDiv">
             <label for="xval">X position:</label>
             <input type="number" id="xval" name="xval" min="0" max="100"><br><br>
@@ -89,4 +93,5 @@ end</code></pre>
     <script type="module" src="js/index.js"></script>
     <script src="js/input_files.js"></script>
 </body>
+
 </html>
