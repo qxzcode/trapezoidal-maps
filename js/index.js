@@ -159,11 +159,11 @@ async function sleep(ms) {
 
 /** @type Object */
 const PATH_LIST = {
-    Simple1: '/InputFiles/ac7717.txt',
-    Simple2: '/InputFiles/qt2393.txt',
-    Simple3: '/InputFiles/axb1107.txt',
-    Simple4: '/InputFiles/ahk1190.txt',
-    Germany: '/InputFiles/DEU_adm1_reproj_simp1.txt',
+    Simple1: 'InputFiles/ac7717.txt',
+    Simple2: 'InputFiles/qt2393.txt',
+    Simple3: 'InputFiles/axb1107.txt',
+    Simple4: 'InputFiles/ahk1190.txt',
+    Germany: 'InputFiles/DEU_adm1_reproj_simp1.txt',
 };
 
 // /** @type HTMLSelectElement */
