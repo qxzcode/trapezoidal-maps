@@ -293,7 +293,8 @@ async function algorithm(vis) {
     queryDiv.style.visibility = 'visible';
     queryButton.addEventListener('click', (event) => { pointFromText(vis, trapMap) });
 
-
+    // randomize the segment order:
+    segments.sort(() => Math.random() - 0.5);
 
     for (const segment of segments) {
         // do some algorithm work, e.g. add the segment to the trapezoidal map
