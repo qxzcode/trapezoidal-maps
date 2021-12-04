@@ -683,18 +683,21 @@ class Tree {
         let x_nodes_to_check = new Set();
         // traverse to L endpoint
         let currentNode = this.root;
+        let navPt1 = new Point(segment.p1.x, segment.p1.y);
+        let navPt2 = new Point(segment.p2.x, segment.p2.y);
         // let last_point = null;
         while (currentNode.hasChildren()) {
             if (currentNode.type == nodeTypes.X_NODE) {
                 // interpolate a bit up the line if we have a shared point
                 if (currentNode.data.equals(segment.p1)) {
                     let t = 0.999;
-                    let t_pt = new Point(segment.p1.x, segment.p1.y);
-                    t_pt.x = segment.p1.x * t + segment.p2.x * (1 - t);
-                    segment.p1.x = t_pt.x;
+                    // let t_pt = new Point(segment.p1.x, segment.p1.y);
+                    navPt1.x = segment.p1.x * t + segment.p2.x * (1 - t);
+                    navPt1.y = segment.getYpos(navPt1.x);
+                    // segment.p1.x = t_pt.x;
                 }
-                const nav1 = currentNode.navigate(segment.p1);
-                const nav2 = currentNode.navigate(segment.p2);
+                const nav1 = currentNode.navigate(navPt1);
+                const nav2 = currentNode.navigate(navPt2);
                 if (nav1 == null || nav2 == null) {
                     console.log("ILLEGAL NAVIGATION");
                     return;
@@ -704,7 +707,7 @@ class Tree {
                 }
                 // last_point = currentNode.point
             }
-            const n = currentNode.navigate(segment.p1);
+            const n = currentNode.navigate(navPt1);
             if (n) {
                 currentNode = currentNode.left;
             }
@@ -720,12 +723,13 @@ class Tree {
                 // interpolate a bit down the line if we have a shared point
                 if (currentNode.data.equals(segment.p2)) {
                     let t = 0.999;
-                    let t_pt = new Point(segment.p2.x, segment.p2.y);
-                    t_pt.x = segment.p1.x * (1 - t) + segment.p2.x * (t);
-                    segment.p2.x = t_pt.x;
+                    // let t_pt = new Point(segment.p2.x, segment.p2.y);
+                    navPt2.x = segment.p1.x * (1 - t) + segment.p2.x * (t);
+                    navPt2.y = segment.getYpos(navPt2.x);
+                    // segment.p2.x = t_pt.x;
                 }
-                const nav1 = currentNode.navigate(segment.p1);
-                const nav2 = currentNode.navigate(segment.p2);
+                const nav1 = currentNode.navigate(navPt1);
+                const nav2 = currentNode.navigate(navPt2);
                 if (nav1 == null || nav2 == null) {
                     console.log("ILLEGAL NAVIGATION");
                     return;
@@ -735,7 +739,7 @@ class Tree {
                 }
                 // last_point = currentNode.point
             }
-            const n = currentNode.navigate(segment.p2);
+            const n = currentNode.navigate(navPt2);
             if (n) {
                 currentNode = currentNode.left;
             }
@@ -758,8 +762,8 @@ class Tree {
             currentNode = n ? currentNode.left : currentNode.right;
             while (currentNode.hasChildren()) {
                 if (currentNode.type == nodeTypes.X_NODE) {
-                    const nav1 = currentNode.navigate(segment.p1);
-                    const nav2 = currentNode.navigate(segment.p2);
+                    const nav1 = currentNode.navigate(navPt1);
+                    const nav2 = currentNode.navigate(navPt2);
                     if (nav1 == null || nav2 == null) {
                         console.log("ILLEGAL NAVIGATION");
                         return;
