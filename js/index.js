@@ -286,7 +286,7 @@ async function algorithm(vis) {
     }
     let segments = data.segments.map(s =>
         new Segment(new Point(s.x1, s.y1), new Point(s.x2, s.y2)));
-    let trapMap = new TrapezoidalMap(new Point(data.x_min, data.y_min), new Point(data.x_max, data.y_max));
+    let trapMap = new TrapezoidalMap(new Point(data.x_min, data.y_min), new Point(data.x_max, data.y_max), vis);
     vis.trap_map = trapMap;
 
     let queryDiv = document.getElementById('queryDiv');

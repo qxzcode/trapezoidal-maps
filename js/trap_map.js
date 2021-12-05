@@ -188,13 +188,14 @@ class TrapezoidalMap {
     /**
      * @param {Point} min_pt
      * @param {Point} max_pt
+     * @param {Visualization} visualization
      */
-    constructor(min_pt, max_pt) {
+    constructor(min_pt, max_pt, visualization) {
         const seg1 = new Segment(new Point(min_pt.x, max_pt.y), max_pt);
         const seg2 = new Segment(min_pt, new Point(max_pt.x, min_pt.y));
         const t0 = new Trapezoid(min_pt.x, max_pt.x, seg1, seg2);
         const n = new Node(t0, null, nodeTypes.T_NODE);
-        this.root = new Tree(n);
+        this.root = new Tree(n, visualization);
     }
 
     /**
@@ -296,8 +297,9 @@ class Node {
 class Tree {
     /**
      * @param {Node} r_node the initial root node
+     * @param {Visualization} visualization the visualizer
      */
-    constructor(r_node) {
+    constructor(r_node,visualization) {
         this.root = r_node;
         this.x_count = 0;
         this.y_count = 0;
@@ -310,6 +312,7 @@ class Tree {
         this.trap_set = new Set();
 
         this.trap_set.add(r_node.data);
+        this.vis = visualization;
 
         /** @type {{ [key: string]: Node[] }} */
         this.seg_dict = {};
@@ -325,13 +328,14 @@ class Tree {
      * @param {Segment} segment
      * @param {Tree} tmap
      */
-    insertSeg(segment, tmap) {
+    async insertSeg(segment, tmap) {
         // takes in a segment and a trapezoidal map
         // inserts the segment into the map
         if (this.seg_set.has(segment)) { return; }
         this.seg_set.add(segment);
         this.point_set.add(new PointInfo(segment.p1, 'P'))
         this.point_set.add(new PointInfo(segment.p2, 'Q'));
+        // TODO: BREAK HERE
         let trapsList = this.findTrapsCrossed(segment, tmap)
         // for each trapezoid, we can assume that the segment passes through it, so we only need to check endpoints
         trapsList.forEach(t => {
@@ -352,19 +356,25 @@ class Tree {
             // determine our case
             let nroot;
             this.t_count--;
+            // TODO: BREAK HERE
             if (t.data.is_within(segment.p1) && t.data.is_within(segment.p2)) {
                 // case 2
+                // TODO: BREAK HERE
                 nroot = this.replaceTrapCase2(t, segment);
             }
             else if (t.data.is_within(segment.p1) || t.data.is_within(segment.p2)) {
+                // TODO: BREAK HERE
                 // case 1
                 const pt = t.data.is_within(segment.p1) ? segment.p1 : segment.p2;
+                // TODO: BREAK HERE
                 nroot = this.replaceTrapCase1(t, pt, segment);
             }
             else {
+                // TODO: BREAK HERE
                 // case 3
                 nroot = this.replaceTrapCase3(t, segment);
             }
+            // TODO: BREAK HERE
             if (!(p.length > 0)) {
                 this.root = nroot;
             } else {
