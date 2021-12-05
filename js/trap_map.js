@@ -202,11 +202,11 @@ class TrapezoidalMap {
      * Inserts a segment into the map.
      * @param {Segment} segment the segment to insert
      */
-    insert(segment) {
+    async insert(segment) {
         // locate the trapezoid containing each endpoint of the segment
         // const left = this.root.locate(segment.left_pt);
         // const right = this.root.locate(segment.right_pt);
-        this.root.insertSeg(segment, this.root);
+        await this.root.insertSeg(segment, this.root);
         //...
     }
 

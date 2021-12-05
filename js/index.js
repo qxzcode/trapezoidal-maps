@@ -319,7 +319,7 @@ async function algorithm(vis) {
     for (const segment of segments) {
         // do some algorithm work, e.g. add the segment to the trapezoidal map
         //...
-        trapMap.insert(segment);
+        await trapMap.insert(segment);
 
         console.log("x_count: ", trapMap.root.x_count);
         console.log("y_count: ", trapMap.root.y_count);
