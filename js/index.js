@@ -65,12 +65,7 @@ class Visualization {
         }
 
         // draw the segments
-        ctx.lineCap = 'round';
-        ctx.lineWidth = 5 / this.scale;
-        for (const segment of this.segments) {
-            const color = this.highlighted_segment === segment ? 'Chartreuse' : 'CadetBlue';
-            segment.draw(ctx, color, this.x_offset, this.y_offset);
-        }
+        this._draw_segment();
 
         // draw the query point
         if (this.query_point !== null) {
@@ -78,6 +73,16 @@ class Visualization {
             ctx.beginPath();
             ctx.arc(this.query_point.x + this.x_offset, this.query_point.y + this.y_offset, 0.008 * this.height, 0, Math.PI * 2);
             ctx.fill();
+        }
+    }
+
+    _draw_segment() {
+        // draw the segments
+        ctx.lineCap = 'round';
+        ctx.lineWidth = 5 / this.scale;
+        for (const segment of this.segments) {
+            const color = this.highlighted_segment === segment ? 'Chartreuse' : 'CadetBlue';
+            segment.draw(ctx, color, this.x_offset, this.y_offset);
         }
     }
 
@@ -319,6 +324,9 @@ async function algorithm(vis) {
     for (const segment of segments) {
         // do some algorithm work, e.g. add the segment to the trapezoidal map
         //...
+        vis.segments.push(segment);
+        vis.highlighted_segment = segment;
+        vis._draw_segment();
         await trapMap.insert(segment);
 
         console.log("x_count: ", trapMap.root.x_count);
@@ -330,8 +338,6 @@ async function algorithm(vis) {
         console.log("n_points in set: ", trapMap.root.point_set.size);
 
         // update the visualization and pause
-        vis.segments.push(segment);
-        vis.highlighted_segment = segment;
         if (vis.async) {
             await vis.draw_and_pause();
         } else {
