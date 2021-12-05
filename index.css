@@ -75,12 +75,26 @@ body{
 pre.pseudocode {
     counter-reset: linenumber;
     tab-size: 4;
+    --line-num-width: 1.3em;
 }
 
 pre.pseudocode span {
     display: inline-block;
     width: 100%;
     color: #444444;
+    padding-left: var(--line-num-width);
+}
+
+pre.pseudocode span::before {
+    content: counter(linenumber);
+    counter-increment: linenumber;
+
+    display: inline-block;
+    position: relative;
+    right: var(--line-num-width);
+    width: var(--line-num-width);
+    color: #888888;
+    text-align: right;
 }
 
 pre.pseudocode span.highlight {
