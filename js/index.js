@@ -85,12 +85,13 @@ class Visualization {
      * 
      * @param {number} lineNum 
      */
-    highlight_line(lineNum) {
+    async highlight_line(lineNum) {
         if (this.currentlyHighlighted !== null) {
             pseudoCodeBlock.children[this.currentlyHighlighted - 1].className = "";
         }
         pseudoCodeBlock.children[lineNum - 1].className = "highlight";
         this.currentlyHighlighted = lineNum;
+        await this.pause();
     }
 
     /**
@@ -152,8 +153,11 @@ class Visualization {
 
     async draw_and_pause() {
         this.draw();
-        return new Promise(resolve => this._unpause_resolvers.push(resolve));
+        await this.pause();
+    }
 
+    async pause() {
+        return new Promise(resolve => this._unpause_resolvers.push(resolve));
     }
 
     finished() {
