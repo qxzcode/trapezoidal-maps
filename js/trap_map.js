@@ -220,19 +220,19 @@ class TrapezoidalMap {
     query(x, y) {
         let currentNode = this.root.root;
         let queryPoint = new Point(x, y);
-        let queryList = {};
+        let queryList = [];
 
         while (currentNode.hasChildren()) {
-            let dir = currentNode.navigate(queryPoint);
-            let nodeName = this.root.getNodeName(currentNode);
-            queryList[nodeName] = currentNode;
+            const dir = currentNode.navigate(queryPoint);
+            const nodeName = this.root.getNodeName(currentNode);
+            queryList.push([nodeName, currentNode]);
             console.log(nodeName);
             currentNode = dir ? currentNode.left : currentNode.right;
         }
-        let nodeName = this.root.getNodeName(currentNode);
-        queryList[nodeName] = currentNode;
+        const nodeName = this.root.getNodeName(currentNode);
+        queryList.push([nodeName, currentNode]);
         console.log(nodeName);
-        return [currentNode.data,queryList];
+        return [currentNode.data, queryList];
     }
 }
 

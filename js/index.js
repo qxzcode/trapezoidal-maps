@@ -489,9 +489,9 @@ function pointFromText(vis, trapMap) {
 function doQueryAndDraw(vis, trapMap, x, y) {
     setCollapse(true);
     vis.query_point = new Point(x, y);
-    const trapNList = trapMap.query(x, y);
-    vis.highlighted_trap = trapNList[0];
-    console.log(trapNList[1])
+    const [trap, queryList] = trapMap.query(x, y);
+    vis.highlighted_trap = trap;
+    console.log(queryList);
     vis.draw();
 }
 
