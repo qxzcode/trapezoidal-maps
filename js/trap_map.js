@@ -1,4 +1,5 @@
 //@ts-check
+import { Visualization } from './index.js';
 
 class Point {
     /**

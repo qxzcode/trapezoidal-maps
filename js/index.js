@@ -1,7 +1,7 @@
 //@ts-check
 import { Point, Segment, Trapezoid, TrapezoidalMap, Node, Tree } from './trap_map.js';
 
-class Visualization {
+export class Visualization {
     /**
      * @param {{ x_min: number; y_min: number; x_max: number; y_max: number; }} data
      */
@@ -157,12 +157,22 @@ class Visualization {
     }
 
     async draw_and_pause() {
-        this.draw();
-        await this.pause();
+        // no-op if speed set to "instant"
+        if (!isMaxSpeed()) {
+            this.draw();
+            await this.pause();
+        }
     }
 
     async pause() {
-        return new Promise(resolve => this._unpause_resolvers.push(resolve));
+        if (this.async) {
+            return new Promise(resolve => this._unpause_resolvers.push(resolve));
+        } else {
+            const delayMillis = getStepDelay();
+            if (delayMillis > 0) {
+                await sleep(delayMillis);
+            }
+        }
     }
 
     finished() {
@@ -254,6 +264,10 @@ function getStepDelay() {
     }
 }
 
+function isMaxSpeed() {
+    return getStepDelay() === 0;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     canvas.height = 600;
 
@@ -338,17 +352,9 @@ async function algorithm(vis) {
         console.log("n_points in set: ", trapMap.root.point_set.size);
 
         // update the visualization and pause
-        if (vis.async) {
-            await vis.draw_and_pause();
-        } else {
-            const delayMillis = getStepDelay();
-            if (delayMillis > 0) {
-                vis.draw();
-                await sleep(delayMillis);
-            }
-        }
+        await vis.draw_and_pause();
     }
-    vis.draw()
+    vis.draw();
 
     if (segments.length < 30) {
         let titleRow = adjMat.insertRow();
