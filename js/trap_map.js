@@ -362,20 +362,21 @@ class Tree {
             await this.vis.highlight_line(4);
             if (t.data.is_within(segment.p1) && t.data.is_within(segment.p2)) {
                 // case 2
-                await this.vis.highlight_line(5);
+                await this.vis.highlight_line(7);
                 nroot = this.replaceTrapCase2(t, segment);
             }
             else if (t.data.is_within(segment.p1) || t.data.is_within(segment.p2)) {
-                await this.vis.highlight_line(12);
+                await this.vis.highlight_line(14);
                 // case 1
                 const pt = t.data.is_within(segment.p1) ? segment.p1 : segment.p2;
-                this.vis.highlight_line(15);
+                this.vis.highlight_line(17);
                 nroot = this.replaceTrapCase1(t, pt, segment);
             }
             else {
                 await this.vis.highlight_line(25);
                 // case 3
                 nroot = this.replaceTrapCase3(t, segment);
+                await this.vis.highlight_line(27);
             }
             await this.vis.highlight_line(33);
             if (!(p.length > 0)) {
