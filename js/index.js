@@ -91,6 +91,7 @@ export class Visualization {
      * @param {number} lineNum 
      */
     async highlight_line(lineNum) {
+        setCollapse(false);
         if (this.currentlyHighlighted !== null) {
             pseudoCodeBlock.children[this.currentlyHighlighted - 1].className = "";
         }
@@ -267,6 +268,20 @@ function getStepDelay() {
 
 function isMaxSpeed() {
     return getStepDelay() === 0;
+}
+
+/** @type HTMLDetailsElement */
+// @ts-ignore
+const queryCollapse = document.getElementById('query-collapse');
+/** @type HTMLDetailsElement */
+// @ts-ignore
+const pseudocodeCollapse = document.getElementById('pseudocode-collapse');
+/**
+ * @param {boolean} showQuery
+ */
+function setCollapse(showQuery) {
+    queryCollapse.open = showQuery;
+    pseudocodeCollapse.open = !showQuery;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -472,6 +487,7 @@ function pointFromText(vis, trapMap) {
  * @param {number} y - query y coordinate, in data coordinates
  */
 function doQueryAndDraw(vis, trapMap, x, y) {
+    setCollapse(true);
     vis.query_point = new Point(x, y);
     const trapNList = trapMap.query(x, y);
     vis.highlighted_trap = trapNList[0];

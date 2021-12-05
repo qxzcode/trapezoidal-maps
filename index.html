@@ -38,7 +38,10 @@
                 <canvas id="canvas"></canvas><br><br>
             </div>
             <div class="column">
-                <pre id="pseudocode"><span>INSERT_SEGMENT(Segment S, Trapezoidal Map T_MAP)</span>
+                <details id="pseudocode-collapse" open>
+                    <summary><code>INSERT_SEGMENT</code> pseudocode</summary>
+                    <pre id="pseudocode">
+<span>INSERT_SEGMENT(Segment S, Trapezoidal Map T_MAP)</span>
 <span>	let T_LIST = findTrapsCrossed(S, T_MAP)</span>
 <span>	for each T in T_LIST</span>
 <span>		if(T.contains(S.p1) AND T.contains(S.p2))</span>
@@ -73,6 +76,11 @@
 <span>		MERGE_ADJACENT_TRAPEZOIDS(ROOT)</span>
 <span>	end</span>
 <span>end</span></pre>
+                </details>
+                <details id="query-collapse">
+                    <summary>Search node sequence for query</summary>
+                    [TODO]
+                </details>
             </div>
         </div>
 
