@@ -44,8 +44,8 @@
 <span>INSERT_SEGMENT(Segment S, Trapezoidal Map T_MAP)</span>
 <span>	let T_LIST = findTrapsCrossed(S, T_MAP)</span>
 <span>	for each T in T_LIST</span>
-<span>		if(T.contains(S.p1) AND T.contains(S.p2))</span>
-<span>			// CASE 2</span>
+<span>		if T.contains(S.p1) AND T.contains(S.p2)</span>
+<span>			// CASE 2: this trapezoid contains both of the segment's endpoints</span>
 <span>			create node structure:</span>
 <span>			ROOT = X_NODE(S.p1)</span>
 <span>				* L -> T_NODE</span>
@@ -54,8 +54,8 @@
 <span>						L -> T_NODE</span>
 <span>						R -> T_NODE</span>
 <span>					* R -> T_NODE</span>
-<span>		else if(T.contains(S.p1) || T.contains(S.p2))</span>
-<span>			// CASE 1</span>
+<span>		else if T.contains(S.p1) OR T.contains(S.p2)</span>
+<span>			// CASE 1: this trapezoid contains only one of the endpoints</span>
 <span>			p = point contained in T</span>
 <span>			create node structure:</span>
 <span>			(assuming p is S.p1, swap L & R if p is S.p2)</span>
@@ -65,7 +65,7 @@
 <span>					L -> T_NODE</span>
 <span>					R -> T_NODE</span>
 <span>		else</span>
-<span>			// CASE 3</span>
+<span>			// CASE 3: this trapezoid doesn't contain either endpoint</span>
 <span>			create node structure:</span>
 <span>			ROOT = Y_NODE(S)</span>
 <span>				L -> T_NODE</span>
