@@ -14,7 +14,7 @@ class Visualization {
         this.height = data.y_max - data.y_min;
         this.scale = canvas.height / this.height;
         this.async = true;
-        this.currentlyHighlighted = 0;
+        this.currentlyHighlighted = null;
 
         // resize the canvas to fit the data aspect ratio
         const aspect = this.height / this.width;
@@ -86,8 +86,10 @@ class Visualization {
      * @param {number} lineNum 
      */
     highlight_line(lineNum) {
-        pseudoCodeBlock.children[this.currentlyHighlighted].className = "";
-        pseudoCodeBlock.children[lineNum].className = "highlight";
+        if (this.currentlyHighlighted !== null) {
+            pseudoCodeBlock.children[this.currentlyHighlighted - 1].className = "";
+        }
+        pseudoCodeBlock.children[lineNum - 1].className = "highlight";
         this.currentlyHighlighted = lineNum;
     }
 

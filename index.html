@@ -40,12 +40,12 @@
             </div>
             <div class="column">
                 <script src="pseudocode/prism.js"></script>
-                <pre class="pseudocode"><span>INSERT_SEGMENT(Segment S, Trapezoidal Map T_MAP)</span>
+                <pre id="pseudocode"><span>INSERT_SEGMENT(Segment S, Trapezoidal Map T_MAP)</span>
 <span>	let T_LIST = findTrapsCrossed(S, T_MAP)</span>
 <span>	for each T in T_LIST</span>
 <span>		if(T.contains(S.p1) AND T.contains(S.p2))</span>
 <span>			// CASE 2</span>
-<span class="highlight">			create node structure:</span>
+<span>			create node structure:</span>
 <span>			ROOT = X_NODE(S.p1)</span>
 <span>				* L -> T_NODE</span>
 <span>				* R -> X_NODE(S.p2)</span>
