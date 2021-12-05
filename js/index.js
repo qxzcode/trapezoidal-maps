@@ -69,7 +69,7 @@ export class Visualization {
         // draw the segments
         this._draw_segment();
 
-        if (this.query_point !== null) {
+        if (this.highlighted_node_seq !== null) {
             ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
             ctx.fillRect(0, 0, this.width, this.height);
 
@@ -122,7 +122,9 @@ export class Visualization {
             ctx.stroke();
             ctx.fill();
             ctx.restore();
+        }
 
+        if (this.query_point !== null) {
             // draw the query point
             ctx.fillStyle = '#ba0c00';
             ctx.beginPath();
@@ -369,6 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
         step_button.removeEventListener('click', start);
         loadFile(fileList.value).then(result => {
             setCollapse(false);
+            canvas.removeEventListener('click', canvasClickHandler);
             data = result
             visualization = new Visualization(data);
             visualization.draw();
@@ -385,6 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
 const adjMat = document.getElementById('adjMat');
 
 const queryButton = document.getElementById('queryButton');
+let queryClickHandler = null;
 
 let allText = '';
 
@@ -405,7 +409,9 @@ async function algorithm(vis) {
 
     let queryDiv = document.getElementById('queryDiv');
     queryDiv.style.visibility = 'visible';
-    queryButton.addEventListener('click', (event) => { pointFromText(vis, trapMap) });
+    queryButton.removeEventListener('click', queryClickHandler);
+    queryClickHandler = (event) => { pointFromText(vis, trapMap) };
+    queryButton.addEventListener('click', queryClickHandler);
 
     // randomize the segment order:
     segments.sort(() => Math.random() - 0.5);
@@ -510,18 +516,20 @@ async function algorithm(vis) {
     await doPointPicking(vis, trapMap);
 }
 
+let canvasClickHandler = null;
 /**
  * @param {Visualization} vis
  * @param {TrapezoidalMap} trapMap
  */
 async function doPointPicking(vis, trapMap) {
-    canvas.addEventListener('click', event => {
+    canvasClickHandler = (/** @type {MouseEvent} */ event) => {
         if (event.button === 0) {
             let x = event.offsetX / vis.scale;
             let y = (canvas.height - event.offsetY) / vis.scale;
             doQueryAndDraw(vis, trapMap, x - vis.x_offset, y - vis.y_offset);
         }
-    });
+    };
+    canvas.addEventListener('click', canvasClickHandler);
 }
 
 /**
@@ -560,7 +568,7 @@ function doQueryAndDraw(vis, trapMap, x, y) {
         [nodeTypes.Y_NODE]: 'Y-node',
         [nodeTypes.T_NODE]: 'Trapezoid',
     }
-    let selectedButton;
+    let selectedButton = null;
     const nodeList = queryList.map(([_, node]) => node);
     /** @param {number} i */
     function selectNode(i) {
@@ -573,22 +581,21 @@ function doQueryAndDraw(vis, trapMap, x, y) {
         const button = document.createElement('button');
         button.textContent = `${TYPE_NAMES[node.type]}: ${nodeName}`;
         button.addEventListener('click', () => {
-            selectedButton.classList.remove('selected');
+            if (selectedButton !== null) {
+                selectedButton.classList.remove('selected');
+            }
             selectedButton = button;
             selectedButton.classList.add('selected');
             selectNode(i);
         });
         li.appendChild(button);
         queryListContainer.appendChild(li);
-        if (node.type === nodeTypes.T_NODE) {
-            selectedButton = button;
-        }
     }
-    selectedButton.classList.add('selected');
 
     // update the visualization
     vis.highlighted_trap = trap;
-    selectNode(nodeList.length - 1);
+    vis.highlighted_node_seq = null;
+    vis.draw();
 }
 
 /**
