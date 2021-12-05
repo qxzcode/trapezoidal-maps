@@ -281,6 +281,7 @@ const pseudocodeCollapse = document.getElementById('pseudocode-collapse');
  */
 function setCollapse(showQuery) {
     queryCollapse.open = showQuery;
+    queryCollapse.ariaDisabled = String(!showQuery);
     pseudocodeCollapse.open = !showQuery;
 }
 
@@ -311,6 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
         step_button.disabled = true;
         step_button.removeEventListener('click', start);
         loadFile(fileList.value).then(result => {
+            setCollapse(false);
             data = result
             visualization = new Visualization(data);
             visualization.draw();

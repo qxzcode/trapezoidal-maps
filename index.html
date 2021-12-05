@@ -77,9 +77,9 @@
 <span>	end</span>
 <span>end</span></pre>
                 </details>
-                <details id="query-collapse">
+                <details id="query-collapse" aria-disabled="true">
                     <summary>Search node sequence for query</summary>
-                    [TODO]
+                    <div id="query-node-list">fdasji</div>
                 </details>
             </div>
         </div>
@@ -91,7 +91,10 @@
             <input type="number" id="yval" name="yval" min="0" max="100"><br><br>
             <input type="submit" value="Submit" id="queryButton">
         </div>
-        <table id="adjMat"></table>
+        <details>
+            <summary>Node adjacency table</summary>
+            <table id="adjMat"></table>
+        </details>
     </main>
 
     <footer>

@@ -103,3 +103,8 @@ pre#pseudocode span.highlight {
     color: #ba0c00;
     background-color: #ffe6e6;
 }
+
+details[aria-disabled="true"] > summary {
+    opacity: 0.5;
+    pointer-events: none; /* prevents click events */
+}
