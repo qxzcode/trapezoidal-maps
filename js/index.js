@@ -14,6 +14,7 @@ class Visualization {
         this.height = data.y_max - data.y_min;
         this.scale = canvas.height / this.height;
         this.async = true;
+        this.currentlyHighlighted = 0;
 
         // resize the canvas to fit the data aspect ratio
         const aspect = this.height / this.width;
@@ -78,6 +79,16 @@ class Visualization {
             ctx.arc(this.query_point.x + this.x_offset, this.query_point.y + this.y_offset, 0.008 * this.height, 0, Math.PI * 2);
             ctx.fill();
         }
+    }
+
+    /**
+     * 
+     * @param {number} lineNum 
+     */
+    highlight_line(lineNum) {
+        pseudoCodeBlock.children[this.currentlyHighlighted].className = "";
+        pseudoCodeBlock.children[lineNum].className = "highlighted";
+        this.currentlyHighlighted = lineNum;
     }
 
     /**
@@ -209,6 +220,9 @@ finish_button.style.display = "none";
 let id_str = 'qt2393';
 let loadedFromFile = false;
 let data = INPUT_FILES['qt2393'];
+
+const pseudoCodeBlock = document.getElementById('pseudocode');
+
 
 /** @type {HTMLInputElement} */
 // @ts-ignore
