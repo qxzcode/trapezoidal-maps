@@ -215,11 +215,12 @@ class TrapezoidalMap {
      * 
      * @param {number} x 
      * @param {number} y 
-     * @returns {[Trapezoid,Object]}
+     * @returns {[Trapezoid, [string, Node][]]}
      */
     query(x, y) {
         let currentNode = this.root.root;
-        let queryPoint = new Point(x, y);
+        const queryPoint = new Point(x, y);
+        /** @type {[string, Node][]} */
         let queryList = [];
 
         while (currentNode.hasChildren()) {
@@ -239,6 +240,7 @@ class TrapezoidalMap {
 
 
 // a stand-in for an enum type
+/** @type {{X_NODE: "x_node", Y_NODE: "y_node", T_NODE: "t_node"}} */
 const nodeTypes = {
     X_NODE: "x_node",
     Y_NODE: "y_node",
@@ -249,7 +251,7 @@ class Node {
     /**
      * @param {any} d
      * @param {(pt: Point) => boolean} f
-     * @param {string} type
+     * @param {"x_node"|"y_node"|"t_node"} type
      */
     constructor(d, f, type) {
         /** @type Set<Node> */
@@ -799,4 +801,4 @@ class Tree {
     }
 }
 
-export { Point, Segment, Trapezoid, TrapezoidalMap, Node, Tree };
+export { Point, Segment, Trapezoid, TrapezoidalMap, Node, Tree, nodeTypes };

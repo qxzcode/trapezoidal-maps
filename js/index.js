@@ -1,5 +1,5 @@
 //@ts-check
-import { Point, Segment, Trapezoid, TrapezoidalMap, Node, Tree } from './trap_map.js';
+import { Point, Segment, Trapezoid, TrapezoidalMap, Node, nodeTypes } from './trap_map.js';
 
 export class Visualization {
     /**
@@ -30,6 +30,8 @@ export class Visualization {
         this.trap_map = null;
         /** @type Trapezoid= */
         this.highlighted_trap = null;
+        /** @type Node[]= */
+        this.highlighted_node_seq = null;
         /** @type Point= */
         this.query_point = null;
     }
@@ -67,9 +69,62 @@ export class Visualization {
         // draw the segments
         this._draw_segment();
 
-        // draw the query point
         if (this.query_point !== null) {
-            ctx.fillStyle = "#ff2626";
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.fillRect(0, 0, this.width, this.height);
+
+            // draw the highlighted query region
+            let left = this.data.x_min;
+            let right = this.data.x_max;
+            let top = new Segment(new Point(left, this.data.y_max), new Point(right, this.data.y_max));
+            let bot = new Segment(new Point(left, this.data.y_min), new Point(right, this.data.y_min));
+            for (let i = 0; i < this.highlighted_node_seq.length - 1; i++) {
+                const node = this.highlighted_node_seq[i];
+                if (node.type == nodeTypes.X_NODE) {
+                    if (node.navigate(this.query_point)) {
+                        right = Math.min(right, node.data.x);
+                    } else {
+                        left = Math.max(left, node.data.x);
+                    }
+                } else if (node.type == nodeTypes.Y_NODE) {
+                    if (node.navigate(this.query_point)) {
+                        bot = node.data;
+                    } else {
+                        top = node.data;
+                    }
+                }
+            }
+            ctx.save();
+            ctx.translate(this.x_offset, this.y_offset);
+            ctx.strokeStyle = 'blue';
+            const lastNode = this.highlighted_node_seq[this.highlighted_node_seq.length - 1];
+            if (lastNode.type == nodeTypes.X_NODE) {
+                // draw the vertical split line
+                ctx.beginPath();
+                ctx.moveTo(lastNode.data.x, this.data.y_min);
+                ctx.lineTo(lastNode.data.x, this.data.y_max);
+                ctx.stroke();
+            } else if (lastNode.type == nodeTypes.Y_NODE) {
+                // draw the "horizontal" split line
+                ctx.beginPath();
+                ctx.moveTo(this.data.x_min, lastNode.data.getYpos(this.data.x_min));
+                ctx.lineTo(this.data.x_max, lastNode.data.getYpos(this.data.x_max));
+                ctx.stroke();
+            }
+            ctx.fillStyle = 'hsla(0, 100%, 50%, 0.25)';
+            ctx.strokeStyle = 'black';
+            ctx.beginPath();
+            ctx.moveTo(left, top.getYpos(left));
+            ctx.lineTo(right, top.getYpos(right));
+            ctx.lineTo(right, bot.getYpos(right));
+            ctx.lineTo(left, bot.getYpos(left));
+            ctx.closePath();
+            ctx.stroke();
+            ctx.fill();
+            ctx.restore();
+
+            // draw the query point
+            ctx.fillStyle = '#ba0c00';
             ctx.beginPath();
             ctx.arc(this.query_point.x + this.x_offset, this.query_point.y + this.y_offset, 0.008 * this.height, 0, Math.PI * 2);
             ctx.fill();
@@ -87,8 +142,7 @@ export class Visualization {
     }
 
     /**
-     * 
-     * @param {number} lineNum 
+     * @param {number} lineNum
      */
     async highlight_line(lineNum) {
         setCollapse(false);
@@ -211,7 +265,7 @@ const PATH_LIST = {
 // }
 
 // $.getHTML('./InputFiles').done((json) => {
-//     console.log(json); //["doc1.jpg", "doc2.jpg", "doc3.jpg"] 
+//     console.log(json); //["doc1.jpg", "doc2.jpg", "doc3.jpg"]
 // }).fail((jqxhr, textStatus, error) => {
 //     var err = textStatus + ", " + error;
 //     console.log("Request Failed: " + err);
@@ -273,9 +327,11 @@ function isMaxSpeed() {
 /** @type HTMLDetailsElement */
 // @ts-ignore
 const queryCollapse = document.getElementById('query-collapse');
+const queryListContainer = document.getElementById('query-node-list');
 /** @type HTMLDetailsElement */
 // @ts-ignore
 const pseudocodeCollapse = document.getElementById('pseudocode-collapse');
+
 /**
  * @param {boolean} showQuery
  */
@@ -489,12 +545,50 @@ function pointFromText(vis, trapMap) {
  * @param {number} y - query y coordinate, in data coordinates
  */
 function doQueryAndDraw(vis, trapMap, x, y) {
-    setCollapse(true);
     vis.query_point = new Point(x, y);
     const [trap, queryList] = trapMap.query(x, y);
+
+    // update the query list
+    setCollapse(true);
+    // clear its children
+    while (queryListContainer.firstChild) {
+        queryListContainer.removeChild(queryListContainer.firstChild);
+    }
+    // add the new children
+    const TYPE_NAMES = {
+        [nodeTypes.X_NODE]: 'X-node',
+        [nodeTypes.Y_NODE]: 'Y-node',
+        [nodeTypes.T_NODE]: 'Trapezoid',
+    }
+    let selectedButton;
+    const nodeList = queryList.map(([_, node]) => node);
+    /** @param {number} i */
+    function selectNode(i) {
+        vis.highlighted_node_seq = nodeList.slice(0, i + 1);
+        vis.draw();
+    }
+    for (let i = 0; i < queryList.length; i++) {
+        const [nodeName, node] = queryList[i];
+        const li = document.createElement('li');
+        const button = document.createElement('button');
+        button.textContent = `${TYPE_NAMES[node.type]}: ${nodeName}`;
+        button.addEventListener('click', () => {
+            selectedButton.classList.remove('selected');
+            selectedButton = button;
+            selectedButton.classList.add('selected');
+            selectNode(i);
+        });
+        li.appendChild(button);
+        queryListContainer.appendChild(li);
+        if (node.type === nodeTypes.T_NODE) {
+            selectedButton = button;
+        }
+    }
+    selectedButton.classList.add('selected');
+
+    // update the visualization
     vis.highlighted_trap = trap;
-    console.log(queryList);
-    vis.draw();
+    selectNode(nodeList.length - 1);
 }
 
 /**

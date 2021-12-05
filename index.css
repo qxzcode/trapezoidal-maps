@@ -108,3 +108,24 @@ details[aria-disabled="true"] > summary {
     opacity: 0.5;
     pointer-events: none; /* prevents click events */
 }
+
+#query-node-list {
+    max-height: 40rem;
+    overflow-y: auto;
+}
+
+#query-node-list button {
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    background-color: #e1e3eb;
+    color: var(--text);
+    padding: 0.7rem 0.9rem;
+    margin: 0.5rem 0;
+    transition: .4s;
+}
+
+#query-node-list button.selected {
+    background-color: #ba0c00;
+    color: #fff;
+}
