@@ -147,6 +147,7 @@ export class Visualization {
         this.step_handler = () => {
             this._unpause_resolvers.forEach(resolve => resolve());
             this._unpause_resolvers = [];
+            this.async = true;
         };
         this.continuer = () => {
             this.step_handler();
@@ -281,6 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
         step_button.textContent = 'Step';
         visualization.start();
         finish_button.style.display = "";
+        visualization.async = true;
         // algorithm(visualization, segments);
         algorithm(visualization);
     }
