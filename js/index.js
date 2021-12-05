@@ -96,7 +96,7 @@ export class Visualization {
             }
             ctx.save();
             ctx.translate(this.x_offset, this.y_offset);
-            ctx.strokeStyle = 'blue';
+            ctx.strokeStyle = '#2f60ff';
             const lastNode = this.highlighted_node_seq[this.highlighted_node_seq.length - 1];
             if (lastNode.type == nodeTypes.X_NODE) {
                 // draw the vertical split line
@@ -161,11 +161,11 @@ export class Visualization {
      * @param {Trapezoid} trap
      */
     _draw_trapezoid(trap) {
-        //ctx.fillStyle = trap.color;
         if (trap === this.highlighted_trap) {
             ctx.fillStyle = 'hsla(0, 100%, 50%, 0.25)';
         } else {
-            ctx.fillStyle = 'hsla(0, 100%, 50%, 0.1)';
+            ctx.fillStyle = 'transparent';
+            // ctx.fillStyle = trap.color;
         }
         ctx.strokeStyle = 'black';
         ctx.setLineDash([5 / this.scale, 5 / this.scale]);
@@ -199,15 +199,20 @@ export class Visualization {
         return traps;
     }
 
+    unpause() {
+        this._unpause_resolvers.forEach(resolve => resolve());
+        this._unpause_resolvers = [];
+    }
+
     start() {
         // set up the step_button event handler that unpauses the visualization
         this.step_handler = () => {
-            this._unpause_resolvers.forEach(resolve => resolve());
-            this._unpause_resolvers = [];
+            this.unpause();
+            this.draw();
             this.async = true;
         };
         this.continuer = () => {
-            this.step_handler();
+            this.unpause();
             this.async = false;
         }
         step_button.addEventListener('click', this.step_handler);
