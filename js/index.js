@@ -342,7 +342,9 @@ async function algorithm(vis) {
         //...
         vis.segments.push(segment);
         vis.highlighted_segment = segment;
-        vis._draw_segment();
+        if (!isMaxSpeed()) {
+            vis._draw_segment();
+        }
         await trapMap.insert(segment);
 
         console.log("x_count: ", trapMap.root.x_count);
