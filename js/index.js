@@ -164,7 +164,7 @@ export class Visualization {
         if (trap === this.highlighted_trap) {
             ctx.fillStyle = 'hsla(0, 100%, 50%, 0.25)';
         } else {
-            ctx.fillStyle = 'transparent';
+            ctx.fillStyle = 'hsla(0, 100%, 50%, 0.1)';
             // ctx.fillStyle = trap.color;
         }
         ctx.strokeStyle = 'black';
