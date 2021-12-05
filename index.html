@@ -40,41 +40,41 @@
             </div>
             <div class="column">
                 <script src="pseudocode/prism.js"></script>
-                <pre data-line=5 class="language-plain line-numbers"><code>INSERT_SEGMENT(Segment S, Trapezoidal Map T_MAP) 
-	let T_LIST = findTrapsCrossed(S, T_MAP)
-	for each T in T_LIST
-		if(T.contains(S.p1) AND T.contains(S.p2))
-			// CASE 2
-			create node structure:
-			ROOT = X_NODE(S.p1)
-				* L -> T_NODE
-				* R -> X_NODE(S.p2)
-					* L -> Y_NODE(S)
-						L -> T_NODE
-						R -> T_NODE
-					* R -> T_NODE
-		else if(T.contains(S.p1) || T.contains(S.p2))
-			// CASE 1
-			p = point contained in T
-			create node structure:
-			(assuming p is S.p1, swap L & R if p is S.p2)
-			ROOT = X_NODE(p)
-				* L -> T_NODE
-				* R -> Y_NODE(S)
-					L -> T_NODE
-					R -> T_NODE
-		else
-			// CASE 3
-			create node structure:
-			ROOT = Y_NODE(S)
-				L -> T_NODE
-				R -> T_NODE
-		end
-		Place node structure at position of T in T_MAP
-		Delete(T)
-		MERGE_ADJACENT_TRAPEZOIDS(ROOT)
-	end
-end</code></pre>
+                <pre class="pseudocode"><span>INSERT_SEGMENT(Segment S, Trapezoidal Map T_MAP)</span>
+<span>	let T_LIST = findTrapsCrossed(S, T_MAP)</span>
+<span>	for each T in T_LIST</span>
+<span>		if(T.contains(S.p1) AND T.contains(S.p2))</span>
+<span>			// CASE 2</span>
+<span class="highlight">			create node structure:</span>
+<span>			ROOT = X_NODE(S.p1)</span>
+<span>				* L -> T_NODE</span>
+<span>				* R -> X_NODE(S.p2)</span>
+<span>					* L -> Y_NODE(S)</span>
+<span>						L -> T_NODE</span>
+<span>						R -> T_NODE</span>
+<span>					* R -> T_NODE</span>
+<span>		else if(T.contains(S.p1) || T.contains(S.p2))</span>
+<span>			// CASE 1</span>
+<span>			p = point contained in T</span>
+<span>			create node structure:</span>
+<span>			(assuming p is S.p1, swap L & R if p is S.p2)</span>
+<span>			ROOT = X_NODE(p)</span>
+<span>				* L -> T_NODE</span>
+<span>				* R -> Y_NODE(S)</span>
+<span>					L -> T_NODE</span>
+<span>					R -> T_NODE</span>
+<span>		else</span>
+<span>			// CASE 3</span>
+<span>			create node structure:</span>
+<span>			ROOT = Y_NODE(S)</span>
+<span>				L -> T_NODE</span>
+<span>				R -> T_NODE</span>
+<span>		end</span>
+<span>		Place node structure at position of T in T_MAP</span>
+<span>		Delete(T)</span>
+<span>		MERGE_ADJACENT_TRAPEZOIDS(ROOT)</span>
+<span>	end</span>
+<span>end</span></pre>
             </div>
         </div>
 

@@ -71,3 +71,19 @@ body{
     margin-right: 0.5rem;
 }
 */
+
+pre.pseudocode {
+    counter-reset: linenumber;
+    tab-size: 4;
+}
+
+pre.pseudocode span {
+    display: inline-block;
+    width: 100%;
+    color: #444444;
+}
+
+pre.pseudocode span.highlight {
+    color: #ba0c00;
+    background-color: #ffe6e6;
+}
