@@ -335,10 +335,10 @@ class Tree {
         this.seg_set.add(segment);
         this.point_set.add(new PointInfo(segment.p1, 'P'))
         this.point_set.add(new PointInfo(segment.p2, 'Q'));
-        this.vis.highlight_line(2);
+        await this.vis.highlight_line(2);
         let trapsList = this.findTrapsCrossed(segment, tmap)
         // for each trapezoid, we can assume that the segment passes through it, so we only need to check endpoints
-        trapsList.forEach(t => {
+        for(const t of trapsList){
             let p = Array.from(t.parent);
             this.trap_set.delete(t.data);
             // find trapezoid in children list, remove it
@@ -356,25 +356,25 @@ class Tree {
             // determine our case
             let nroot;
             this.t_count--;
-            this.vis.highlight_line(4);
+            await this.vis.highlight_line(4);
             if (t.data.is_within(segment.p1) && t.data.is_within(segment.p2)) {
                 // case 2
-                this.vis.highlight_line(5);
+                await this.vis.highlight_line(5);
                 nroot = this.replaceTrapCase2(t, segment);
             }
             else if (t.data.is_within(segment.p1) || t.data.is_within(segment.p2)) {
-                this.vis.highlight_line(12);
+                await this.vis.highlight_line(12);
                 // case 1
                 const pt = t.data.is_within(segment.p1) ? segment.p1 : segment.p2;
                 this.vis.highlight_line(15);
                 nroot = this.replaceTrapCase1(t, pt, segment);
             }
             else {
-                // TODO: BREAK HERE
+                await this.vis.highlight_line(25);
                 // case 3
                 nroot = this.replaceTrapCase3(t, segment);
             }
-            // TODO: BREAK HERE
+            await this.vis.highlight_line(33);
             if (!(p.length > 0)) {
                 this.root = nroot;
             } else {
@@ -387,7 +387,7 @@ class Tree {
                     nroot.parent.add(parent);
                 });
             }
-        });
+        }
     }
 
     /**
