@@ -87,7 +87,7 @@ class Visualization {
      */
     highlight_line(lineNum) {
         pseudoCodeBlock.children[this.currentlyHighlighted].className = "";
-        pseudoCodeBlock.children[lineNum].className = "highlighted";
+        pseudoCodeBlock.children[lineNum].className = "highlight";
         this.currentlyHighlighted = lineNum;
     }
 
